@@ -1,7 +1,14 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:my_flutter_app/obd2_plugin.dart';
 import 'package:permission_handler/permission_handler.dart';
+
+
+
 
 class MonitoringPage extends StatefulWidget {
   @override
@@ -13,11 +20,49 @@ class _MonitoringPageState extends State<MonitoringPage> {
   String connectionStatus = '';
   List<BluetoothDevice> nearbyPairedDevices = [];
   bool onDataReceivedSet = false;
+  bool isLoading = false;
+  BluetoothDevice? connectedDevice;
+  StreamSubscription? onDataReceivedSubscription;
 
   @override
   void initState() {
     super.initState();
-    obd2.initBluetooth;
+    initObd2();
+    onDataReceivedSubscription = obd2.connection?.input?.listen((Uint8List data) {
+      // onDataReceived에서 데이터를 처리하는 로직
+      // 데이터를 문자열로 변환
+      String receivedData = String.fromCharCodes(data);
+
+      // 예상되는 데이터 형식에 따라 적절한 처리를 수행
+      if (receivedData.startsWith("RPM:")) {
+        // RPM 값을 추출하여 화면에 표시
+        String rpmValue = receivedData.split(":")[1];
+        // 화면에 표시하거나 다른 작업을 수행할 수 있음
+      } else if (receivedData.startsWith("속력:")) {
+        // 속력 값을 추출하여 화면에 표시
+        String speedValue = receivedData.split(":")[1];
+        // 화면에 표시하거나 다른 작업을 수행할 수 있음
+      } else if (receivedData.startsWith("냉각수 온도:")) {
+        // 냉각수 온도 값을 추출하여 화면에 표시
+        String coolantTempValue = receivedData.split(":")[1];
+        // 화면에 표시하거나 다른 작업을 수행할 수 있음
+      } else {
+        // 다른 유형의 데이터에 대한 처리 로직을 여기에 추가
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    // 페이지가 dispose될 때 subscription을 취소
+    onDataReceivedSubscription?.cancel();
+    super.dispose();
+  }
+
+  Future<void> initObd2() async {
+    // Bluetooth를 초기화합니다.
+    await obd2.initBluetooth;
+
   }
 
   Future<void> callPermissions() async {
@@ -74,7 +119,8 @@ class _MonitoringPageState extends State<MonitoringPage> {
         nearbyPairedDevices[index], 
         (connection){
           setState(() {
-            connectionStatus = 'Bluetooth 장치에 연결됨';
+            connectedDevice = nearbyPairedDevices[index];
+            connectionStatus = '$connectedDevice에 연결됨';
           });
         },
         (message) {
@@ -90,87 +136,108 @@ class _MonitoringPageState extends State<MonitoringPage> {
     }
   }
 
-  Future<void> responseConfig() async {
-    String json = '''[
-      {
-          "command": "AT Z",
-          "description": "",
-          "status": true
-      }
-    ]''';
-
-    // 데이터 수신을 위한 콜백이 이미 초기화되었는지 확인합니다.
-    bool isInitialized = await obd2.isListenToDataInitialed;
+  // getDTC 함수 정의
+  Future<void> getDTC() async {
+    // 에러코드 요청에 사용할 JSON 문자열을 생성합니다.
+    String dtcJsonString = '[{"command": "03", "description": "DTC request"}]';
     
-    // 설정 작업을 시작합니다.
-    int configTime = await obd2.configObdWithJSON(json);
-
-    // 설정 작업이 완료되었을 때의 처리를 위해 Future.delayed를 사용합니다.
-    await Future.delayed(Duration(milliseconds: configTime), () {
+    try {
+      obd2.onResponse = null;
       setState(() {
-        connectionStatus = 'config 완료';
+        connectionStatus = 'dtc...';
+        isLoading = true; // 데이터 요청 중임을 표시합니다.
       });
-    });
 
-    if (!isInitialized) {
-      // 데이터 수신을 위한 콜백을 등록합니다.
-      obd2.setOnDataReceived((command, response, requestCode) {
-        setState(() {
-          connectionStatus = "$command => $response";
-        });
+      // Obd2Plugin의 getDTCFromJSON 메서드를 사용하여 에러코드를 요청합니다.
+      int delayTime = await obd2.getDTCFromJSON(dtcJsonString);
+
+      // 요청이 완료되기 전에 대기합니다.
+      await Future.delayed(Duration(milliseconds: delayTime));
+
+      // 데이터를 수신할 때까지 대기합니다.
+      await obd2.setOnDataReceived((command, response, requestCode) async {
+        // 수신된 데이터를 처리합니다.
+        if (command == 'DTC') {
+          List<String> dtcList = json.decode(response);
+          
+          setState(() {
+            connectionStatus = '${dtcList.map((dtc) => Text(dtc)).toList()}';
+            isLoading = false; // 데이터 요청 완료를 표시합니다.
+          });
+        }
       });
-    }else{
+
+    } catch (e) {
       setState(() {
-          connectionStatus = "config 앱 종료 후 다시 실행";
-        });
+        isLoading = false; // 데이터 요청 완료를 표시합니다.
+        // 에러가 발생한 경우 에러 메시지를 출력합니다.
+        connectionStatus = '에러: $e';
+      });
     }
   }
 
-  Future<void> responseDTC() async {
-    String dtcJSON = '''[
-      {
-          "id": 1,
-		      "created_at": "2021-12-05T16:33:18.965620Z",
-		      "command": "03",
-		      "response": "6",
-		      "status": true,
-      }
-    ]''';
-
-    // DTC를 가져오는 작업을 시작합니다.
-    int dtcTime = await obd2.getDTCFromJSON(dtcJSON);
-
-    // 작업이 완료되었을 때의 처리를 위해 Future.delayed를 사용합니다.
-    await Future.delayed(Duration(milliseconds: dtcTime), () {
+  Future<void> getInformation() async {
+    try {
+      obd2.onResponse = null;
       setState(() {
-        connectionStatus = 'DTC 가져오기 완료';
+        connectionStatus = 'param...';
+        isLoading = true; // 데이터 요청 중임을 표시합니다.
       });
-    });
 
+      // RPM 정보 요청을 위한 JSON 문자열 생성
+      String rpmJsonString = '[{"command": "01 0C", "description": "Engine RPM"}]';
+      int rpmDelayTime = await obd2.getDTCFromJSON(rpmJsonString);
+
+      // 속력 정보 요청을 위한 JSON 문자열 생성
+      String speedJsonString = '[{"command": "01 0D", "description": "Vehicle Speed"}]';
+      int speedDelayTime = await obd2.getDTCFromJSON(speedJsonString);
+
+      // 냉각수 온도 정보 요청을 위한 JSON 문자열 생성
+      String coolantTempJsonString = '[{"command": "01 05", "description": "Engine Coolant Temperature"}]';
+      int coolantTempDelayTime = await obd2.getDTCFromJSON(coolantTempJsonString);
+
+      // 요청이 완료되기 전에 대기합니다.
+      await Future.delayed(Duration(milliseconds: rpmDelayTime + speedDelayTime + coolantTempDelayTime));
+
+      // 데이터를 수신할 때까지 대기합니다.
+      await obd2.setOnDataReceived((command, response, requestCode) async {
+        // 수신된 데이터를 처리합니다.
+        if (command == 'PARAMETER') {
+          List<dynamic> parameters = json.decode(response);
+          String rpm = '';
+          String speed = '';
+          String coolantTemp = '';
+
+          for (var parameter in parameters) {
+            switch (parameter['PID']) {
+              case '0C':
+                rpm = parameter['response'];
+                break;
+              case '0D':
+                speed = parameter['response'];
+                break;
+              case '05':
+                coolantTemp = parameter['response'];
+                break;
+            }
+          }
+
+          setState(() {
+            connectionStatus = 'RPM: $rpm, 속력: $speed, 냉각수 온도: $coolantTemp';
+            isLoading = false; // 데이터 요청 완료를 표시합니다.
+          });
+        }
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false; // 데이터 요청 완료를 표시합니다.
+        // 에러가 발생한 경우 에러 메시지를 출력합니다.
+        connectionStatus = '에러: $e';
+      });
+    }
   }
 
-  Future<void> responseParams() async {
-    String paramJSON = '''[
-      {
-          "PID": "AT RV",
-          "length": 4,
-          "title": "Battery Voltage",
-          "unit": "V",
-          "description": "<str>",
-          "status": true
-      }
-    ]''';
-    
-    // 파라미터를 가져오는 작업을 시작합니다.
-    int paramTime = await obd2.getParamsFromJSON(paramJSON);
-
-    // 작업이 완료되었을 때의 처리를 위해 Future.delayed를 사용합니다.
-    await Future.delayed(Duration(milliseconds: paramTime), () {
-      setState(() {
-        connectionStatus = '파라미터 가져오기 완료';
-      });
-    });
-  }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -203,17 +270,12 @@ class _MonitoringPageState extends State<MonitoringPage> {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: responseConfig,
-              child: Text('config'),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: responseDTC,
+              onPressed: getDTC,
               child: Text('dtc'),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: responseParams,
+              onPressed: getInformation,
               child: Text('param'),
             ),
             const SizedBox(height: 20),
