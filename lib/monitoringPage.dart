@@ -7,8 +7,6 @@ import 'package:my_flutter_app/obd2_plugin.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 
-
-
 class MonitoringPage extends StatefulWidget {
   @override
   _MonitoringPageState createState() => _MonitoringPageState();
@@ -117,7 +115,6 @@ class _MonitoringPageState extends State<MonitoringPage> {
     String dtcJsonString = '[{"command": "03", "description": "DTC request"}]';
     
     try {
-      obd2.onResponse = null;
       setState(() {
         connectionStatus = 'dtc...';
         isLoading = true; // 데이터 요청 중임을 표시합니다.
@@ -154,17 +151,15 @@ class _MonitoringPageState extends State<MonitoringPage> {
 
   Future<void> getRPM() async {
     try {
-      obd2.onResponse = null;
       setState(() {
         connectionStatus = 'param...';
         isLoading = true; // 데이터 요청 중임을 표시합니다.
       });
 
-
       // RPM 정보 요청을 위한 JSON 문자열 생성
       String rpmJsonString = '''[
         {
-            "PID": "01 0C",
+            "PID": "010C",
             "length": 2,
             "title": "Engine RPM",
             "unit": "RPM",
@@ -172,17 +167,38 @@ class _MonitoringPageState extends State<MonitoringPage> {
             "status": true
         }]
         ''';
+      setState(() {
+        connectionStatus = 'param json';
+      });
 
       await Future.delayed(Duration(milliseconds: await obd2.configObdWithJSON(rpmJsonString)), () async {
         // 데이터를 수신할 때까지 대기합니다.
         await obd2.setOnDataReceived((command, response, requestCode) async {
+          setState(() {
+            connectionStatus = 'param 수신';
+          });
           // 수신된 데이터를 처리합니다.
           if(command == "PARAMETER"){
-            String parameterResponse = response.toString();
             setState(() {
-              connectionStatus = 'PARAMETER: $parameterResponse';
-              isLoading = false; // 데이터 요청 완료를 표시합니다.
+              connectionStatus = 'param PARAMETER';
             });
+            try{
+              // JSON 형식으로 수신된 데이터 파싱
+              List<dynamic> parameterResponse = json.decode(response);
+              // RPM 값 추출
+              String rpmValue = parameterResponse[0]["response"];
+              setState(() {
+                connectionStatus = 'RPM: $rpmValue';
+                isLoading = false; // 데이터 요청 완료를 표시합니다.
+              });
+            }catch(e){
+              // JSON 파싱 중 오류 발생 시 처리
+              setState(() {
+                connectionStatus = '에러: 데이터를 처리하는 중 문제가 발생했습니다.';
+                isLoading = false; // 데이터 요청 완료를 표시합니다.
+              });
+            }
+            
           }
           
         });

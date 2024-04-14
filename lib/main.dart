@@ -121,8 +121,10 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
                   diagnoseVehicle();
                 }
               else if (firstButton.compareTo('알람') == 0) {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => AllimPage()));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AllimPage()),
+                  );
               }
             },
           ),
