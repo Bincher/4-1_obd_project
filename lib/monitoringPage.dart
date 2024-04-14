@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
@@ -22,40 +21,16 @@ class _MonitoringPageState extends State<MonitoringPage> {
   bool onDataReceivedSet = false;
   bool isLoading = false;
   BluetoothDevice? connectedDevice;
-  StreamSubscription? onDataReceivedSubscription;
 
   @override
   void initState() {
     super.initState();
     initObd2();
-    onDataReceivedSubscription = obd2.connection?.input?.listen((Uint8List data) {
-      // onDataReceived에서 데이터를 처리하는 로직
-      // 데이터를 문자열로 변환
-      String receivedData = String.fromCharCodes(data);
-
-      // 예상되는 데이터 형식에 따라 적절한 처리를 수행
-      if (receivedData.startsWith("RPM:")) {
-        // RPM 값을 추출하여 화면에 표시
-        String rpmValue = receivedData.split(":")[1];
-        // 화면에 표시하거나 다른 작업을 수행할 수 있음
-      } else if (receivedData.startsWith("속력:")) {
-        // 속력 값을 추출하여 화면에 표시
-        String speedValue = receivedData.split(":")[1];
-        // 화면에 표시하거나 다른 작업을 수행할 수 있음
-      } else if (receivedData.startsWith("냉각수 온도:")) {
-        // 냉각수 온도 값을 추출하여 화면에 표시
-        String coolantTempValue = receivedData.split(":")[1];
-        // 화면에 표시하거나 다른 작업을 수행할 수 있음
-      } else {
-        // 다른 유형의 데이터에 대한 처리 로직을 여기에 추가
-      }
-    });
   }
 
   @override
   void dispose() {
     // 페이지가 dispose될 때 subscription을 취소
-    onDataReceivedSubscription?.cancel();
     super.dispose();
   }
 
@@ -158,10 +133,11 @@ class _MonitoringPageState extends State<MonitoringPage> {
       await obd2.setOnDataReceived((command, response, requestCode) async {
         // 수신된 데이터를 처리합니다.
         if (command == 'DTC') {
-          List<String> dtcList = json.decode(response);
+          List<dynamic> dtcList = json.decode(response);
+          List<String> dtcStrings = dtcList.map((dtc) => dtc.toString()).toList();
           
           setState(() {
-            connectionStatus = '${dtcList.map((dtc) => Text(dtc)).toList()}';
+            connectionStatus = '${dtcStrings.map((dtc) => Text(dtc)).toList()}';
             isLoading = false; // 데이터 요청 완료를 표시합니다.
           });
         }
@@ -176,7 +152,7 @@ class _MonitoringPageState extends State<MonitoringPage> {
     }
   }
 
-  Future<void> getInformation() async {
+  Future<void> getRPM() async {
     try {
       obd2.onResponse = null;
       setState(() {
@@ -184,50 +160,34 @@ class _MonitoringPageState extends State<MonitoringPage> {
         isLoading = true; // 데이터 요청 중임을 표시합니다.
       });
 
+
       // RPM 정보 요청을 위한 JSON 문자열 생성
-      String rpmJsonString = '[{"command": "01 0C", "description": "Engine RPM"}]';
-      int rpmDelayTime = await obd2.getDTCFromJSON(rpmJsonString);
+      String rpmJsonString = '''[
+        {
+            "PID": "01 0C",
+            "length": 2,
+            "title": "Engine RPM",
+            "unit": "RPM",
+            "description": "<double>, (( [0] * 256) + [1] ) / 4",
+            "status": true
+        }]
+        ''';
 
-      // 속력 정보 요청을 위한 JSON 문자열 생성
-      String speedJsonString = '[{"command": "01 0D", "description": "Vehicle Speed"}]';
-      int speedDelayTime = await obd2.getDTCFromJSON(speedJsonString);
-
-      // 냉각수 온도 정보 요청을 위한 JSON 문자열 생성
-      String coolantTempJsonString = '[{"command": "01 05", "description": "Engine Coolant Temperature"}]';
-      int coolantTempDelayTime = await obd2.getDTCFromJSON(coolantTempJsonString);
-
-      // 요청이 완료되기 전에 대기합니다.
-      await Future.delayed(Duration(milliseconds: rpmDelayTime + speedDelayTime + coolantTempDelayTime));
-
-      // 데이터를 수신할 때까지 대기합니다.
-      await obd2.setOnDataReceived((command, response, requestCode) async {
-        // 수신된 데이터를 처리합니다.
-        if (command == 'PARAMETER') {
-          List<dynamic> parameters = json.decode(response);
-          String rpm = '';
-          String speed = '';
-          String coolantTemp = '';
-
-          for (var parameter in parameters) {
-            switch (parameter['PID']) {
-              case '0C':
-                rpm = parameter['response'];
-                break;
-              case '0D':
-                speed = parameter['response'];
-                break;
-              case '05':
-                coolantTemp = parameter['response'];
-                break;
-            }
+      await Future.delayed(Duration(milliseconds: await obd2.configObdWithJSON(rpmJsonString)), () async {
+        // 데이터를 수신할 때까지 대기합니다.
+        await obd2.setOnDataReceived((command, response, requestCode) async {
+          // 수신된 데이터를 처리합니다.
+          if(command == "PARAMETER"){
+            String parameterResponse = response.toString();
+            setState(() {
+              connectionStatus = 'PARAMETER: $parameterResponse';
+              isLoading = false; // 데이터 요청 완료를 표시합니다.
+            });
           }
-
-          setState(() {
-            connectionStatus = 'RPM: $rpm, 속력: $speed, 냉각수 온도: $coolantTemp';
-            isLoading = false; // 데이터 요청 완료를 표시합니다.
-          });
-        }
+          
+        });
       });
+      
     } catch (e) {
       setState(() {
         isLoading = false; // 데이터 요청 완료를 표시합니다.
@@ -236,7 +196,6 @@ class _MonitoringPageState extends State<MonitoringPage> {
       });
     }
   }
-
   
 
   @override
@@ -275,7 +234,7 @@ class _MonitoringPageState extends State<MonitoringPage> {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: getInformation,
+              onPressed: getRPM,
               child: Text('param'),
             ),
             const SizedBox(height: 20),

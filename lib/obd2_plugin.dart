@@ -339,7 +339,7 @@ class Obd2Plugin {
   Future<bool> get isListenToDataInitialed async {
     return onResponse != null ;
   }
-
+  
   /// 데이터 수신 콜백 함수를 설정하는 비동기 함수
   Future<void> setOnDataReceived(Function(String command, String response, int requestCode) onResponse) async {
     String response = "";
