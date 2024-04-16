@@ -62,6 +62,11 @@ class Float extends StatelessWidget {
           }
           await Future.delayed(Duration(milliseconds: await AllimPage.of(context).obd2.configObdWithJSON('''[
             {
+                "command": "AT D",
+                "description": "",
+                "status": true
+            },
+            {
                 "command": "AT Z",
                 "description": "",
                 "status": true
@@ -72,17 +77,7 @@ class Float extends StatelessWidget {
                 "status": true
             },
             {
-                "command": "AT SP 0",
-                "description": "",
-                "status": true
-            },
-            {
-                "command": "AT SH 81 10 F1",
-                "description": "",
-                "status": true
-            },
-            {
-                "command": "AT H1",
+                "command": "AT L0",
                 "description": "",
                 "status": true
             },
@@ -92,17 +87,12 @@ class Float extends StatelessWidget {
                 "status": true
             },
             {
-                "command": "AT M0",
+                "command": "AT H0",
                 "description": "",
                 "status": true
             },
             {
-                "command": "AT AT 1",
-                "description": "",
-                "status": true
-            },
-            {
-                "command": "01 00",
+                "command": "AT SP 0",
                 "description": "",
                 "status": true
             }
@@ -150,63 +140,63 @@ class Float extends StatelessWidget {
             "status": true
         },
         {
-        "PID": "02 11",
-        "length": 2,
-        "title": "Throttle Position",
-        "unit": "%",
-        "description": "<int>, [0] * 100 / 255",
-        "status": true
-    },
-    {
-        "PID": "01 0E",
-        "length": 1,
-        "title": "Fuel Level Input",
-        "unit": "%",
-        "description": "<int>, [0] * 100 / 255",
-        "status": true
-    },
-    {
-        "PID": "01 0F",
-        "length": 1,
-        "title": "Fuel Pressure",
-        "unit": "kPa",
-        "description": "<int>, [0] * 3",
-        "status": true
-    },
-    {
-        "PID": "01 10",
-        "length": 2,
-        "title": "Commanded EGR",
-        "unit": "%",
-        "description": "<int>, [0] * 100 / 255",
-        "status": true
-    },
-    {
-        "PID": "01 11",
-        "length": 2,
-        "title": "EGR Error",
-        "unit": "%",
-        "description": "<int>, [0] * 100 / 255 - 100",
-        "status": true
-    },
-    {
-        "PID": "01 12",
-        "length": 2,
-        "title": "Commanded evaporative purge",
-        "unit": "%",
-        "description": "<int>, [0] * 100 / 255",
-        "status": true
-    },
-    {
-        "PID": "01 13",
-        "length": 2,
-        "title": "Fuel Tank Level Input",
-        "unit": "%",
-        "description": "<int>, [0] * 100 / 255",
-        "status": true
-    }
-    ]
-  ''')), (){});
+            "PID": "02 11",
+            "length": 2,
+            "title": "Throttle Position",
+            "unit": "%",
+            "description": "<int>, [0] * 100 / 255",
+            "status": true
+        },
+        {
+            "PID": "01 0E",
+            "length": 1,
+            "title": "Fuel Level Input",
+            "unit": "%",
+            "description": "<int>, [0] * 100 / 255",
+            "status": true
+        },
+        {
+            "PID": "01 0F",
+            "length": 1,
+            "title": "Fuel Pressure",
+            "unit": "kPa",
+            "description": "<int>, [0] * 3",
+            "status": true
+        },
+        {
+            "PID": "01 10",
+            "length": 2,
+            "title": "Commanded EGR",
+            "unit": "%",
+            "description": "<int>, [0] * 100 / 255",
+            "status": true
+        },
+        {
+            "PID": "01 11",
+            "length": 2,
+            "title": "EGR Error",
+            "unit": "%",
+            "description": "<int>, [0] * 100 / 255 - 100",
+            "status": true
+        },
+        {
+            "PID": "01 12",
+            "length": 2,
+            "title": "Commanded evaporative purge",
+            "unit": "%",
+            "description": "<int>, [0] * 100 / 255",
+            "status": true
+        },
+        {
+            "PID": "01 13",
+            "length": 2,
+            "title": "Fuel Tank Level Input",
+            "unit": "%",
+            "description": "<int>, [0] * 100 / 255",
+            "status": true
+        }
+      ]
+    ''')), (){});
           await Future.delayed(Duration(milliseconds: await AllimPage.of(context).obd2.getDTCFromJSON('''
             [
     {
