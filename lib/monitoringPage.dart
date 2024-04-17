@@ -1,280 +1,141 @@
-import 'dart:async';
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
-import 'package:my_flutter_app/obd2_plugin.dart';
-import 'package:permission_handler/permission_handler.dart';
 
-
+// 모니터링 페이지를 나타내는 StatefulWidget
 class MonitoringPage extends StatefulWidget {
+  const MonitoringPage({Key? key}) : super(key: key);
+
+  // 부모 위젯의 MonitoringPageState 인스턴스를 찾아서 반환
+  static MonitoringPageState of(BuildContext context) => context.findAncestorStateOfType()!;
+  
   @override
-  _MonitoringPageState createState() => _MonitoringPageState();
+  MonitoringPageState createState() => MonitoringPageState();
 }
 
-class _MonitoringPageState extends State<MonitoringPage> {
-  Obd2Plugin obd2 = Obd2Plugin();
-  String connectionStatus = '';
-  List<BluetoothDevice> nearbyPairedDevices = [];
-  bool onDataReceivedSet = false;
-  bool isLoading = false;
-  BluetoothDevice? connectedDevice;
+// 모니터링 페이지의 상태를 관리하는 State
+class MonitoringPageState extends State<MonitoringPage> {
+  
+  // 검색어 상태 변수
+  String searchKeyword = '';
+  // 엔진 RPM 상태 변수
+  double engineRpm = 0;
+  // 배터리 전압 상태 변수
+  double batteryVoltage = 0;
+  // 속력 상태 변수
+  double vehicleSpeed = 0;
+  // 엔진 온도 상태 변수
+  double engineTemp = 0;
+
+  // 모니터링 카드 데이터 목록
+  List<MonitoringCardData> monitoringCards = []; 
 
   @override
   void initState() {
     super.initState();
-    initObd2();
+    // 초기화 시 모니터링 카드 데이터 초기화
+    monitoringCards = [
+      MonitoringCardData(title: '엔진 온도\n$engineRpm도', dialogTitle: '엔진 온도', dialogContent: '그래프'),
+      MonitoringCardData(title: '배터리 전압\n$batteryVoltage V', dialogTitle: '배터리 전압', dialogContent: '그래프'),
+      MonitoringCardData(title: '엔진 RPM\n$vehicleSpeed RPM', dialogTitle: '엔진 RPM', dialogContent: '그래프'),
+      MonitoringCardData(title: '속력\n$engineTemp km/h', dialogTitle: '속력', dialogContent: '그래프'),
+    ];
   }
-
-  @override
-  void dispose() {
-    // 페이지가 dispose될 때 subscription을 취소
-    super.dispose();
-  }
-
-  Future<void> initObd2() async {
-    // Bluetooth를 초기화합니다.
-    await obd2.initBluetooth;
-
-  }
-
-  Future<void> callPermissions() async {
-    Map<Permission, PermissionStatus> statuses = await [
-      Permission.bluetooth,
-      Permission.bluetoothAdvertise,
-      Permission.bluetoothConnect,
-      Permission.bluetoothScan,
-    ].request();
-    
-    if (statuses[Permission.bluetooth] == PermissionStatus.granted &&
-        statuses[Permission.bluetoothAdvertise] == PermissionStatus.granted &&
-        statuses[Permission.bluetoothConnect] == PermissionStatus.granted &&
-        statuses[Permission.bluetoothScan] == PermissionStatus.granted) {
-      setState(() {
-        connectionStatus = '권한 얻기 성공';
-      });
-    } else {
-      setState(() {
-        connectionStatus = '권한 얻기 실패';
-      });
-    }
-
-  }
-
-  Future<void> canBluetooth() async {
-    bool enabled = await obd2.enableBluetooth;
-    
-    setState(() {
-      connectionStatus = enabled ? 'Bluetooth 사용 가능' : 'Bluetooth 사용 불가능';
-    });
-  }
-
-  Future<void> hasBluetoothDevice() async {
-    bool connected = await obd2.hasConnection;
-    
-    setState(() {
-      connectionStatus = connected ? 'Bluetooth 장치 연결됨' : 'Bluetooth 장치 연결 안 됨';
-    });
-  }
-
-  Future<void> getBluetoothDevice() async {
-    await callPermissions();
-    List<BluetoothDevice> devices = await FlutterBluetoothSerial.instance.getBondedDevices();
-    setState(() {
-      connectionStatus = '블루투스 장치 목록 표시';
-      nearbyPairedDevices = devices;
-    });
-  }
-
-  Future<void> connectDevice(int index) async {
-    if (index >= 0 && index < nearbyPairedDevices.length) {
-      obd2.getConnection(
-        nearbyPairedDevices[index], 
-        (connection){
-          setState(() {
-            connectedDevice = nearbyPairedDevices[index];
-            connectionStatus = '$connectedDevice에 연결됨';
-          });
-        },
-        (message) {
-          setState(() {
-            connectionStatus = '연결 오류: $message';
-          });
-        }
-      );
-    } else {
-      setState(() {
-        connectionStatus = '선택한 장치 인덱스가 잘못되었습니다.';
-      });
-    }
-  }
-
-  // getDTC 함수 정의
-  Future<void> getDTC() async {
-    // 에러코드 요청에 사용할 JSON 문자열을 생성합니다.
-    String dtcJsonString = '[{"command": "03", "description": "DTC request"}]';
-    
-    try {
-      setState(() {
-        connectionStatus = 'dtc...';
-        isLoading = true; // 데이터 요청 중임을 표시합니다.
-      });
-
-      // Obd2Plugin의 getDTCFromJSON 메서드를 사용하여 에러코드를 요청합니다.
-      int delayTime = await obd2.getDTCFromJSON(dtcJsonString);
-
-      // 요청이 완료되기 전에 대기합니다.
-      await Future.delayed(Duration(milliseconds: delayTime));
-
-      // 데이터를 수신할 때까지 대기합니다.
-      await obd2.setOnDataReceived((command, response, requestCode) async {
-        // 수신된 데이터를 처리합니다.
-        if (command == 'DTC') {
-          List<dynamic> dtcList = json.decode(response);
-          List<String> dtcStrings = dtcList.map((dtc) => dtc.toString()).toList();
-          
-          setState(() {
-            connectionStatus = '${dtcStrings.map((dtc) => Text(dtc)).toList()}';
-            isLoading = false; // 데이터 요청 완료를 표시합니다.
-          });
-        }
-      });
-
-    } catch (e) {
-      setState(() {
-        isLoading = false; // 데이터 요청 완료를 표시합니다.
-        // 에러가 발생한 경우 에러 메시지를 출력합니다.
-        connectionStatus = '에러: $e';
-      });
-    }
-  }
-
-  Future<void> getRPM() async {
-    try {
-      setState(() {
-        connectionStatus = 'param...';
-        isLoading = true; // 데이터 요청 중임을 표시합니다.
-      });
-
-      // RPM 정보 요청을 위한 JSON 문자열 생성
-      String rpmJsonString = '''[
-        {
-            "PID": "010C",
-            "length": 2,
-            "title": "Engine RPM",
-            "unit": "RPM",
-            "description": "<double>, (( [0] * 256) + [1] ) / 4",
-            "status": true
-        }]
-        ''';
-      setState(() {
-        connectionStatus = 'param json';
-      });
-
-      await Future.delayed(Duration(milliseconds: await obd2.configObdWithJSON(rpmJsonString)), () async {
-        // 데이터를 수신할 때까지 대기합니다.
-        await obd2.setOnDataReceived((command, response, requestCode) async {
-          setState(() {
-            connectionStatus = 'param 수신';
-          });
-          // 수신된 데이터를 처리합니다.
-          if(command == "PARAMETER"){
-            setState(() {
-              connectionStatus = 'param PARAMETER';
-            });
-            try{
-              // JSON 형식으로 수신된 데이터 파싱
-              List<dynamic> parameterResponse = json.decode(response);
-              // RPM 값 추출
-              String rpmValue = parameterResponse[0]["response"];
-              setState(() {
-                connectionStatus = 'RPM: $rpmValue';
-                isLoading = false; // 데이터 요청 완료를 표시합니다.
-              });
-            }catch(e){
-              // JSON 파싱 중 오류 발생 시 처리
-              setState(() {
-                connectionStatus = '에러: 데이터를 처리하는 중 문제가 발생했습니다.';
-                isLoading = false; // 데이터 요청 완료를 표시합니다.
-              });
-            }
-            
-          }
-          
-        });
-      });
-      
-    } catch (e) {
-      setState(() {
-        isLoading = false; // 데이터 요청 완료를 표시합니다.
-        // 에러가 발생한 경우 에러 메시지를 출력합니다.
-        connectionStatus = '에러: $e';
-      });
-    }
-  }
-  
 
   @override
   Widget build(BuildContext context) {
+    // 검색어에 따라 필터된 모니터링 카드 데이터 목록 생성
+    List<MonitoringCardData> filteredCards = monitoringCards.where((card) {
+      return card.title.toLowerCase().contains(searchKeyword.toLowerCase());
+    }).toList();
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Your App'),
+        title: const Text('모니터링 페이지'),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              connectionStatus,
-              style: TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: canBluetooth,
-              child: Text('블루투스 사용 가능 여부 확인'),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: hasBluetoothDevice,
-              child: Text('블루투스 장치 연결 여부 확인'),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: getBluetoothDevice,
-              child: Text('블루투스 장치 목록 가져오기'),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: getDTC,
-              child: Text('dtc'),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: getRPM,
-              child: Text('param'),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              '근처 페어링된 장치:',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            Expanded(
-              child: ListView.builder(
-                itemCount: nearbyPairedDevices.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return ListTile(
-                    title: Text(nearbyPairedDevices[index].name.toString()),
-                    onTap: () {
-                      connectDevice(index);
-                    },
-                  );
-                },
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              onChanged: (value) {
+                setState(() {
+                  searchKeyword = value;
+                });
+              },
+              decoration: InputDecoration(
+                hintText: '검색어를 입력하세요',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
               ),
             ),
-          ],
+          ),
+          Expanded(
+            child: ListView(
+              children: filteredCards.map((card) {
+                return MonitoringCard(
+                  title: card.title,
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: Text(card.dialogTitle),
+                        content: Text(card.dialogContent),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('닫기'),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// 모니터링 카드 위젯
+class MonitoringCard extends StatelessWidget {
+  final String title;
+  final VoidCallback? onPressed;
+
+  const MonitoringCard({
+    Key? key,
+    required this.title,
+    this.onPressed,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.all(16.0),
+      child: ListTile(
+        title: Text(title),
+        trailing: IconButton(
+          icon: const Icon(Icons.info),
+          onPressed: onPressed,
         ),
       ),
     );
   }
+}
+
+// 모니터링 카드 데이터 클래스
+class MonitoringCardData {
+  final String title;
+  final String dialogTitle;
+  final String dialogContent;
+
+  MonitoringCardData({
+    required this.title,
+    required this.dialogTitle,
+    required this.dialogContent,
+  });
 }

@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:my_flutter_app/obd2_plugin.dart';
 
-class AllimPage extends StatefulWidget {
-  const AllimPage({Key? key}) : super(key: key);
-  static AllimPageState of(BuildContext context) => context.findAncestorStateOfType()!;
+class SettingPage extends StatefulWidget {
+  const SettingPage({Key? key}) : super(key: key);
 
   @override
-  State<AllimPage> createState() => AllimPageState();
+  State<SettingPage> createState() => AllimPageState();
 }
 
 
-class AllimPageState extends State<AllimPage> {
+class AllimPageState extends State<SettingPage> {
   
   @override
   void initState() {
@@ -22,14 +21,14 @@ class AllimPageState extends State<AllimPage> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "AllimPage",
+      title: "SettingPage",
       locale: const Locale.fromSubtags(languageCode: 'en'),
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('알림페이지'),
+          title: const Text('세팅페이지'),
         ),
         body: Center(
-          child: Text('알림페이지'),
+          child: Text('세팅페이지'),
         ),
       ),
     );
