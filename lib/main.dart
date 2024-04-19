@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:my_flutter_app/allimPage.dart';
 import 'package:my_flutter_app/diagnosisPage.dart';
 import 'package:my_flutter_app/monitoringPage.dart';
-import 'package:my_flutter_app/bluetoothPairing.dart';
+import 'package:my_flutter_app/bluetoothPage.dart';
 import 'package:my_flutter_app/settingPage.dart';
 
 
@@ -51,7 +51,7 @@ class MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
 
     setState(() {
-      if(isBluetoothConnect){
+      if(getIsConnected()){
         bluetoothText = "OBD2 연결 성공";
       }else{
         bluetoothText = "OBD2 연결 필요";
@@ -93,12 +93,12 @@ class MainPageState extends State<MainPage> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const BluetoothPairing()),
+                        MaterialPageRoute(builder: (context) => const BluetoothPage()),
                       );
                     },
                     child: Text("bluetooth 설정 페이지"),
                   ),
-                  Text(bluetoothText),
+                  Text(!getIsConnected() ? "$bluetoothText" : "${getConnectedDevice()}"),
                   
                   ],
               ),
@@ -118,7 +118,7 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
   double buttonSize = MediaQuery.of(context).size.width / 2 - 20; // 화면의 가로 크기를 반으로 나눈 후 여백을 제외한 크기
 
   Future<void> monitoringVehicle() async {
-    if (!isBluetoothConnect) {
+    if (!getIsConnected()) {
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -137,7 +137,7 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
   }
 
   Future<void> diagnoseVehicle() async {
-    if (isBluetoothConnect) {
+    if (getIsConnected()) {
       showDialog(
         context: context,
         builder: (BuildContext context) {

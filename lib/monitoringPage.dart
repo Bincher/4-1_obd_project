@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_flutter_app/bluetoothPairing.dart';
+import 'package:my_flutter_app/bluetoothPage.dart';
 
 // 모니터링 페이지를 나타내는 StatefulWidget
 class MonitoringPage extends StatefulWidget {

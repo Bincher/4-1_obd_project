@@ -688,6 +688,8 @@ class Obd2Plugin {
     return result ;
   }
 
+  isConnected(BluetoothDevice device) {}
+
 
 }
 
