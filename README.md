@@ -64,7 +64,7 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
 
     - obd2 플러그인
 
-    - thanks by https://github.com/begaz/OBDII
+    - https://github.com/begaz/OBDII
 
 - 참고
     - Command 목록
