@@ -7,7 +7,7 @@ import 'package:my_flutter_app/monitoringPage.dart';
 import 'package:my_flutter_app/bluetoothPairing.dart';
 import 'package:my_flutter_app/settingPage.dart';
 
-bool isConnected = true;
+
 
 void main() {
   runApp(const MyApp());
@@ -39,6 +39,9 @@ class MainPage extends StatefulWidget {
 }
 
 class MainPageState extends State<MainPage> {
+  
+  String bluetoothText = "OBD2 연결이 없습니다.";
+
   @override
   void initState() {
     super.initState();
@@ -46,6 +49,15 @@ class MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
+
+    setState(() {
+      if(isBluetoothConnect){
+        bluetoothText = "OBD2 연결 성공";
+      }else{
+        bluetoothText = "OBD2 연결 필요";
+      }
+    });
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -86,8 +98,9 @@ class MainPageState extends State<MainPage> {
                     },
                     child: Text("bluetooth 설정 페이지"),
                   ),
-                  Text("블루투스 연결 여부를 여기에 나타냄(아직 구현 X)"),
-                ],
+                  Text(bluetoothText),
+                  
+                  ],
               ),
               const SizedBox(height: 20),
               setButtonRow(context, firstButton: '차량진단', secondButton: '모니터링'),
@@ -98,13 +111,14 @@ class MainPageState extends State<MainPage> {
       ),
     );
   }
+
 }
 
 Widget setButtonRow(BuildContext context, {required String firstButton, required String secondButton}) {
   double buttonSize = MediaQuery.of(context).size.width / 2 - 20; // 화면의 가로 크기를 반으로 나눈 후 여백을 제외한 크기
 
   Future<void> monitoringVehicle() async {
-    if (!isConnected) {
+    if (!isBluetoothConnect) {
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -123,23 +137,36 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
   }
 
   Future<void> diagnoseVehicle() async {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return const AlertDialog(
-          title: Text("진단 중"),
-          content: Text("차량을 진단 중입니다..."),
-        );
-      },
-    );
-    // 3초 후에 페이지 이동
-    Future.delayed(const Duration(seconds: 1), () {
-      Navigator.pop(context);
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const DiagnosisPage()),
+    if (isBluetoothConnect) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return const AlertDialog(
+            title: Text("진단 중"),
+            content: Text("차량을 진단 중입니다..."),
+          );
+        },
       );
-    });
+      // 3초 후에 페이지 이동
+      Future.delayed(const Duration(seconds: 1), () {
+        Navigator.pop(context);
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const DiagnosisPage()),
+        );
+      });
+    }else{
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return const AlertDialog(
+            title: Text("블루투스 에러!"),
+            content: Text("obd2가 연결되어있지 않습니다. 블루투스 버튼을 눌려 연결하여주십시오."),
+          );
+        },
+      );
+    }
+    
   }
 
   return Row(

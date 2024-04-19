@@ -1,7 +1,42 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:my_flutter_app/obd2_plugin.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
+
+// 엔진 RPM 상태 변수
+double engineRpm = 0;
+// 배터리 전압 상태 변수
+double batteryVoltage = 0;
+// 속력 상태 변수
+double vehicleSpeed = 0;
+// 엔진 온도 상태 변수
+double engineTemp = 0;
+
+double getEngineRpm(){
+    return engineRpm;
+  } 
+double getBatteryVoltage(){
+    return batteryVoltage;
+  } 
+double getVehicleSpeed(){
+    return vehicleSpeed;
+  } 
+double getEngineTemp(){
+    return engineTemp;
+  } 
+bool getBluetoothEnable(){
+  return isBluetoothEnable;
+}
+bool getBluetoothConnect(){
+  return isBluetoothConnect;
+}
+
+// 블루투스 연결 여부
+bool isBluetoothEnable = false;
+bool isBluetoothConnect = false;
+String bluetoothState = "블루투스 연결이 필요합니다."; // 초기 상태
 
 class BluetoothPairing extends StatefulWidget {
   const BluetoothPairing({Key? key}) : super(key: key);
@@ -15,7 +50,7 @@ class BluetoothPairing extends StatefulWidget {
 
 class BluetoothPairingState extends State<BluetoothPairing> {
   final String _platformVersion = 'Unknown';
-  String bluetoothState = "블루투스 연결이 필요합니다."; // 초기 상태
+  
 
   @override
   void initState() {
@@ -47,26 +82,51 @@ class BluetoothPairingState extends State<BluetoothPairing> {
 // Bluetooth 연결을 위한 FloatingActionButton을 제공하는 위젯
 class Float extends StatelessWidget {
   const Float({Key? key}) : super(key: key);
-
+  
   @override
   Widget build(BuildContext context) {
+    
     return FloatingActionButton(
       child: const Icon(Icons.bluetooth),
       onPressed: () async {
         // Bluetooth가 활성화되어 있는지 확인
-        if(!(await BluetoothPairing.of(context).obd2.isBluetoothEnable)){
-          await BluetoothPairing.of(context).obd2.enableBluetooth ;
+        if(!(await BluetoothPairing.of(context).obd2.isBluetoothEnable)){  
+          isBluetoothEnable = true;
+          await BluetoothPairing.of(context).obd2.enableBluetooth;
+          isBluetoothEnable = true;
         }
         // Bluetooth가 연결되어 있는지 확인
         if (!(await BluetoothPairing.of(context).obd2.hasConnection)){
+          isBluetoothConnect = false;
           // 연결되어 있지 않다면 Bluetooth 장치 목록을 표시
           await showBluetoothList(context, BluetoothPairing.of(context).obd2);
+          isBluetoothConnect = true;
         } else {
+          setState(){
+            bluetoothState = "블루투스 연결이 완료되었습니다.";
+          }
           // 데이터 수신 초기화가 완료되었는지 확인
           if (!(await BluetoothPairing.of(context).obd2.isListenToDataInitialed)){
             // 대기 -> 데이터 받기
             BluetoothPairing.of(context).obd2.setOnDataReceived((command, response, requestCode){
               print("$command => $response");
+              var jsonResponse = jsonDecode(response);
+              for (var data in jsonResponse) {
+                switch (data['PID']) {
+                  case 'AT RV':
+                    batteryVoltage = double.tryParse(data['response']) ?? 0;
+                    break;
+                  case '01 0C':
+                    engineRpm = double.tryParse(data['response']) ?? 0;
+                    break;
+                  case '01 0D':
+                      vehicleSpeed = double.tryParse(data['response']) ?? 0;
+                    break;
+                  case '01 05':
+                    engineTemp = double.tryParse(data['response']) ?? 0;
+                    break;
+                }
+              }
             });
           }
           // OBD에 JSON 데이터 보내기
@@ -165,14 +225,6 @@ String commandJson = '''[
 String paramJson = '''
     [
         {
-            "PID": "AT RV",
-            "length": 4,
-            "title": "Battery Voltage",
-            "unit": "V",
-            "description": "<str>",
-            "status": true
-        },
-        {
             "PID": "01 0C",
             "length": 2,
             "title": "Engine RPM",
@@ -225,3 +277,4 @@ String dtcJson = '''
     }
 ]
           ''';
+

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_flutter_app/bluetoothPairing.dart';
 
 // 모니터링 페이지를 나타내는 StatefulWidget
 class MonitoringPage extends StatefulWidget {
@@ -14,31 +15,25 @@ class MonitoringPage extends StatefulWidget {
 // 모니터링 페이지의 상태를 관리하는 State
 class MonitoringPageState extends State<MonitoringPage> {
   
-  // 검색어 상태 변수
-  String searchKeyword = '';
-  // 엔진 RPM 상태 변수
-  double engineRpm = 0;
-  // 배터리 전압 상태 변수
-  double batteryVoltage = 0;
-  // 속력 상태 변수
-  double vehicleSpeed = 0;
-  // 엔진 온도 상태 변수
-  double engineTemp = 0;
 
+  String searchKeyword = "";
   // 모니터링 카드 데이터 목록
   List<MonitoringCardData> monitoringCards = []; 
 
+  
   @override
   void initState() {
     super.initState();
     // 초기화 시 모니터링 카드 데이터 초기화
     monitoringCards = [
-      MonitoringCardData(title: '엔진 온도\n$engineRpm도', dialogTitle: '엔진 온도', dialogContent: '그래프'),
-      MonitoringCardData(title: '배터리 전압\n$batteryVoltage V', dialogTitle: '배터리 전압', dialogContent: '그래프'),
-      MonitoringCardData(title: '엔진 RPM\n$vehicleSpeed RPM', dialogTitle: '엔진 RPM', dialogContent: '그래프'),
-      MonitoringCardData(title: '속력\n$engineTemp km/h', dialogTitle: '속력', dialogContent: '그래프'),
+      MonitoringCardData(title: '엔진 온도\n${getEngineTemp()}도', dialogTitle: '엔진 온도', dialogContent: '그래프'),
+      MonitoringCardData(title: '배터리 전압\n${getBatteryVoltage()} V', dialogTitle: '배터리 전압', dialogContent: '그래프'),
+      MonitoringCardData(title: '엔진 RPM\n${getEngineRpm()} RPM', dialogTitle: '엔진 RPM', dialogContent: '그래프'),
+      MonitoringCardData(title: '속력\n${getVehicleSpeed()} km/h', dialogTitle: '속력', dialogContent: '그래프'),
     ];
   }
+
+  
 
   @override
   Widget build(BuildContext context) {
