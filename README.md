@@ -6,9 +6,9 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
 
 안내
 
-- 토요일에는 코드 못볼듯합니다...
+- 월요일은 시험준비때문에 많이는 손 못댈듯 합니다
 
-진행상황 (2024.04.19)
+진행상황 (2024.04.21)
 
 1. main.dart
 
@@ -16,9 +16,39 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
 
         - Bluetooth 버튼 및 연결 여부 text는 임시로 둔 것 (실제로 어플리케이션 실행시 text는 오버플로우 발생 -> 사소한 문제)
 
-        - 현재 text는 제대로 작동 안되는 것으로 확인
+        - 현재 text는 setState로 그럴듯하게 실행
 
-    - Bluetooth 버튼 -> bluetoothPage.dart 와 연결
+    - 이슈! : getObdData 함수
+
+        - 5분마다 한번꼴로 실행시킬 필요성
+
+        - 지금 당장은 Timer을 사용할 계획이지만, 능력 부족으로 구현은 제대로 못함
+
+            - 코드에 있는 Timer은 제대로 실행 X
+
+    - bluetoothPage.dart 와 통합
+
+        - 버튼을 클릭하면 기기 선택 후 연결
+
+            - 이때 getObdData도 할려고 했으나 아마 초기화문제로 실행은 안되는듯함
+
+        - 다시 버튼을 클릭하면 연결 종료
+
+        - 이슈! : 다시 버튼을 클릭하여 연결을 종료하는 것에서 obd2_plugin.dart의 disconnect함수에서 문제 발생
+
+            - await connection?.close() ;가 원인
+
+            - D/BluetoothSocket(18393): close() this: android.bluetooth.BluetoothSocket@b9f7ab3, channel: 4, mSocketIS: android.net.LocalSocketImpl$SocketInputStream@3bbf870, mSocketOS: android.net.LocalSocketImpl$SocketOutputStream@35b17e9mSocket: android.net.LocalSocket@6485c6e impl:android.net.LocalSocketImpl@40d0f0f fd:java.io.FileDescriptor@8c02b9c, mSocketState: CONNECTED
+            2
+            D/BluetoothSocket(18393): close() this: android.bluetooth.BluetoothSocket@b9f7ab3, channel: 4, mSocketIS: android.net.LocalSocketImpl$SocketInputStream@3bbf870, mSocketOS: android.net.LocalSocketImpl$SocketOutputStream@35b17e9mSocket: null, mSocketState: CLOSED 
+
+            - 임시로 disconnect 함수를 약간 수정했지만 (connection = null ; 위치 수정) 여전히 제대로 작동되지않음
+
+            - 다행히, 연결 종료 후 다시 버튼을 누르면 기기를 선택하게 하는데 그때 기기를 선택하면 그땐 제대로 연결이 종료
+
+            - 이후 다시 기기를 선택하면 정상적으로 연결
+
+    - Bluetooth 버튼 -> bluetoothPage.dart 와 연결 => 삭제
 
     - 차량진단 버튼 -> diagnosisPage.dart 와 연결
 
@@ -46,7 +76,13 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
 
         - 이유는 다른 페이지에 갔다가 돌아오면 "데이터 받기" 버튼 클릭시 
         [ERROR:flutter/runtime/dart_vm_initializer.cc(41)] Unhandled Exception: Exception: onDataReceived is preset and you can not reprogram it
-        에러 발생
+        에러 발생 => 문제 해결
+
+    - 이슈! : 일단 모니터링 버튼을 클릭할때 obd데이터를 받도록 하니깐 데이터를 받는 속도가 느려서 두번 왔다갔다해야 정상적으로 실행됨
+
+        - 그나마 다행인건 모니터링 페이지를 왔다갔다 할때마다 데이터가 매번 다름
+
+        - await등을 활용해볼 필요성
 
     - 오른쪽 i버튼을 누르면 다이얼로그 생성
 
@@ -62,31 +98,7 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
 
 6. bluetoothPairing.dart
 
-    - 블루투스 페어링을 하는 페이지
-
-    - 3개의 버튼과 1개의 텍스트로 구성
-
-    - 블루투스 연결 버튼을 누르면 디바이스를 선택 후 연결
-
-    - 디바이스 연결 끊기 버튼을 누르면 연결 끊음
-
-    - 데이터 받기 하면 데이터를 받아옴
-
-        - 문제는 결과값이 다음처럼 나옴
-
-        PARAMETER => [{"PID":"AT RV","length":4,"title":"Battery Voltage","unit":"V","description":"<str>","status":true,"response":"OKAT ZELM327 1.5AT E0OKOKOKOKOK13.9"},{"PID":"01 0C","length":2,"title":"Engine RPM","unit":"RPM","description":"<double>, (( [0] * 256) + [1] ) / 4","status":true,"response":"3442.75"},{"PID":"01 0D","length":1,"title":"Speed","unit":"Kh","description":"<int>, [0]","status":true,"response":"0.0"},{"PID":"01 05","length":1,"title":"Engine Temp","unit":"°C","description":"<int>, [0] - 40","status":true,"response":"46.0"}]
-
-        - 이러면 문제가? 배터리 전압을 못구함 => 해결해야할 문제
-
-    - 또다른 문제 : 다른 페이지를 갔다가오면 각 버튼들의 동작이 제대로 작동 안할때가 있음
-    
-        - 디바이스 연결을 끊고 다시 연결하려고 했을때
-
-        - print("반복하다보면 !(await obd2.isBluetoothEnable)가 안먹히는 문제가 발생?"); 는 출력되는데
-
-        - print("여기는 출력이 안됨"); 이건 출력이 안되는 상황...
-
-        - 아마도 await obd2.isBluetoothEnable 에서 문제가 발생한듯 싶음...
+    - 삭제(다음 수정땐 이 파트도 삭제)
 
 7. obd2_plugin.dart
 

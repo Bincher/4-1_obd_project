@@ -69,6 +69,7 @@ class Obd2Plugin {
         newStatus = true ;
       }
     }
+    print(status);
     return status ;
   }
 
@@ -159,8 +160,8 @@ class Obd2Plugin {
   /// Bluetooth 연결을 종료하는 비동기 함수
   Future<bool> disconnect () async {
     if (connection?.isConnected == true) {
-      await connection?.close() ;
       connection = null ;
+      await connection?.close() ;
       return true ;
     } else {
       connection = null ;
@@ -688,7 +689,6 @@ class Obd2Plugin {
     return result ;
   }
 
-  isConnected(BluetoothDevice device) {}
 
 
 }
