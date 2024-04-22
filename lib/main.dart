@@ -1,26 +1,36 @@
-import 'dart:async';
-import 'dart:convert';
+// Dart 코드를 플러터를 이용하여 작성한 것으로 보입니다. 이 코드는 차량 정비 앱을 구성하는데 사용됩니다.
 
-import 'package:flutter/material.dart';
-import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
-import 'package:my_flutter_app/allimPage.dart';
-import 'package:my_flutter_app/diagnosisPage.dart';
-import 'package:my_flutter_app/monitoringPage.dart';
-import 'package:my_flutter_app/bluetoothPage.dart';
-import 'package:my_flutter_app/settingPage.dart';
-import 'package:my_flutter_app/obd2_plugin.dart';
+// 필요한 라이브러리를 가져옵니다.
+import 'dart:async'; // 비동기 작업을 위한 라이브러리
+import 'dart:convert'; // JSON 데이터 처리를 위한 라이브러리
 
+import 'package:flutter/material.dart'; // 플러터 UI 프레임워크
+import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart'; // Bluetooth 관련 기능을 위한 라이브러리
+import 'package:my_flutter_app/allimPage.dart'; // 알람 페이지
+import 'package:my_flutter_app/diagnosisPage.dart'; // 진단 페이지
+import 'package:my_flutter_app/monitoringPage.dart'; // 모니터링 페이지
+import 'package:my_flutter_app/bluetoothPage.dart'; // Bluetooth 설정 페이지
+import 'package:my_flutter_app/settingPage.dart'; // 세팅 페이지
+import 'package:my_flutter_app/obd2_plugin.dart'; // OBD2 플러그인
+
+// Bluetooth 연결 상태를 나타내는 전역 변수
 bool isConnected = false;
+// OBD2 플러그인 인스턴스 생성
 Obd2Plugin obd2 = Obd2Plugin();
 
+// 앱의 진입점
 void main() {
+  // MyApp 위젯을 실행
   runApp(const MyApp());
-  // 작동 안됨
-    Timer.periodic(const Duration(minutes: 5), (timer) {
-      if(isConnected) getDataFromObd(obd2);
-    });
+
+  // 1분마다 데이터를 가져오기 위한 타이머 설정
+  Timer.periodic(const Duration(minutes: 1), (timer) async {
+    // 연결된 상태라면 OBD2 장치로부터 데이터 가져오기
+    if (isConnected) await getDataFromObd(obd2);
+  });
 }
 
+// 앱의 루트 위젯
 class MyApp extends StatelessWidget {
   const MyApp({Key? key});
 
@@ -37,133 +47,127 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// 메인 페이지 위젯
 class MainPage extends StatefulWidget {
   const MainPage({Key? key}) : super(key: key);
 
-  static MainPageState of(BuildContext context) => context.findAncestorStateOfType()!;
+  // State 객체를 가져오는 정적 메서드
+  static MainPageState of(BuildContext context) => context.findAncestorStateOfType<MainPageState>()!;
 
   @override
   MainPageState createState() => MainPageState();
 }
 
+// 메인 페이지 상태 클래스
 class MainPageState extends State<MainPage> {
-  
   String bluetoothText = "OBD2 연결이 없습니다.";
-  
 
   @override
   void initState() {
     super.initState();
-    
   }
-  
+
+  // Bluetooth 장치 설정 함수
   Future<void> setBluetoothDevice() async {
-    try{
-      if(isConnected){
+    try {
+      if (isConnected) {
+        // 연결 종료
         await obd2.disconnect();
         setState(() {
           isConnected = false;
         });
-        
 
+        // 연결 종료 다이얼로그 표시
         showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text("연결 종료"),
-                content: Text("연결이 종료되었습니다."),
-              );
-            },
-          );
-      }else{
-        if(!(await obd2.isBluetoothEnable)){
-          await obd2.enableBluetooth ;
-        }
-        if (!(await obd2.hasConnection)){
-          // 연결되어 있지 않다면 Bluetooth 장치 목록을 표시
-          await showBluetoothList(context, obd2);
-          
-          setState(() {
-              bluetoothText = "연결이 완료되었습니다.";
-            });
-          getDataFromObd(obd2);
-        }
-      }
-      
-    }catch(e){
-      print(e);
-      isConnected = false;
-      showDialog(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text("에러!"),
-              content: Text("문제가 발생했습니다."),
+              title: Text("연결 종료"),
+              content: Text("연결이 종료되었습니다."),
             );
           },
         );
-    }
+      } else {
+        // Bluetooth 활성화 상태 확인
+        if (!(await obd2.isBluetoothEnable)) {
+          await obd2.enableBluetooth;
+        }
+        // 연결되어 있지 않다면 Bluetooth 장치 목록 표시
+        if (!(await obd2.hasConnection)) {
+          await showBluetoothList(context, obd2);
 
+          setState(() {
+            bluetoothText = "연결이 완료되었습니다.";
+          });
+        }
+      }
+    } catch (e) {
+      print(e);
+      isConnected = false;
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("에러!"),
+            content: Text("문제가 발생했습니다."),
+          );
+        },
+      );
+    }
   }
 
-  
-
-    // Bluetooth 장치 목록을 표시하는 함수
+  // Bluetooth 장치 목록을 표시하는 함수
   Future<void> showBluetoothList(BuildContext context, Obd2Plugin obd2plugin) async {
-    List<BluetoothDevice> devices = await obd2plugin.getPairedDevices ;
-    
+    List<BluetoothDevice> devices = await obd2plugin.getPairedDevices;
+
     showModalBottomSheet(
-        context: context,
-        builder: (builder) {
-          return Container(
-            padding: const EdgeInsets.only(top: 0),
-            width: double.infinity,
-            height: devices.length * 50,
-            child: ListView.builder(
-              itemCount: devices.length,
-              itemBuilder: (context, index){
-                return SizedBox(
-                  height: 50,
-                  child: TextButton(
-                    onPressed: (){
-                      // 선택된 Bluetooth 장치에 연결
-                      obd2plugin.getConnection(devices[index], (connection)
-                      {
-                        setState(() {
-                          isConnected = true;
-                        });
-                        
-                        print("connected to bluetooth device.");
-                        Navigator.pop(builder);
-                      }, (message) {
-                        setState(() {
-                          isConnected = false;
-                        });
-                        
-                        print("error in connecting: $message");
-                        Navigator.pop(builder);
+      context: context,
+      builder: (builder) {
+        return Container(
+          padding: const EdgeInsets.only(top: 0),
+          width: double.infinity,
+          height: devices.length * 50,
+          child: ListView.builder(
+            itemCount: devices.length,
+            itemBuilder: (context, index) {
+              return SizedBox(
+                height: 50,
+                child: TextButton(
+                  onPressed: () {
+                    // 선택된 Bluetooth 장치에 연결
+                    obd2plugin.getConnection(devices[index], (connection) {
+                      setState(() {
+                        isConnected = true;
                       });
-                    },
-                    child: Center(
-                      child: Text(devices[index].name.toString()),
-                    ),
+                      print("connected to bluetooth device.");
+                      Navigator.pop(builder);
+                    }, (message) {
+                      setState(() {
+                        isConnected = false;
+                      });
+                      print("error in connecting: $message");
+                      Navigator.pop(builder);
+                    });
+                  },
+                  child: Center(
+                    child: Text(devices[index].name.toString()),
                   ),
-                );
-              },
-            ),
-          );
-        }
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
-
     setState(() {
-      if(isConnected){
+      // 연결 상태에 따라 Bluetooth 텍스트 업데이트
+      if (isConnected) {
         bluetoothText = "OBD2 연결 성공";
-      }else{
+      } else {
         bluetoothText = "OBD2 연결 필요";
       }
     });
@@ -174,7 +178,7 @@ class MainPageState extends State<MainPage> {
         leading: IconButton(
           icon: const Icon(Icons.home),
           onPressed: () {
-            // Home icon button functionality
+            // 홈 아이콘 버튼 기능
           },
         ),
         title: const Text(
@@ -189,7 +193,7 @@ class MainPageState extends State<MainPage> {
         child: Center(
           child: Column(
             children: <Widget>[
-              const SizedBox(height: 20), // 버튼 위 여백
+              const SizedBox(height: 20),
               Row(
                 children: <Widget>[
                   ElevatedButton(
@@ -206,10 +210,10 @@ class MainPageState extends State<MainPage> {
                     child: Text("bluetooth 설정"),
                   ),
                   Text(bluetoothText),
-                  
-                  ],
+                ],
               ),
               const SizedBox(height: 20),
+              // 버튼 행 설정
               setButtonRow(context, firstButton: '차량진단', secondButton: '모니터링'),
               setButtonRow(context, firstButton: '알람', secondButton: '세팅'),
             ],
@@ -218,52 +222,65 @@ class MainPageState extends State<MainPage> {
       ),
     );
   }
-
 }
 
+// OBD2 장치로부터 데이터를 가져오는 함수
 Future<void> getDataFromObd(Obd2Plugin obd2) async {
-    print("getDataFromObd");
-    // 데이터 수신 초기화가 완료되었는지 확인
-    if(!(await obd2.isBluetoothEnable)){
-          await obd2.enableBluetooth ;
-        }
-    print("obd2.isBluetoothEnable");
-    if ((await obd2.hasConnection)){
-      print("obd2.hasConnection");
-      if (!(await obd2.isListenToDataInitialed)){
-        print("!(await obd2.isListenToDataInitialed) : ${!(await obd2.isListenToDataInitialed)}");
-        // 대기 -> 데이터 받기
-        obd2.setOnDataReceived((command, response, requestCode){
-          print("$command => $response");
-          var jsonResponse = jsonDecode(response);
-                for (var data in jsonResponse) {
-                  switch (data['PID']) {
-                    case 'AT RV':
-                      batteryVoltage = double.tryParse(data['response']) ?? 0;
-                      break;
-                    case '01 0C':
-                      engineRpm = double.tryParse(data['response']) ?? 0;
-                      break;
-                    case '01 0D':
-                        vehicleSpeed = double.tryParse(data['response']) ?? 0;
-                      break;
-                    case '01 05':
-                      engineTemp = double.tryParse(data['response']) ?? 0;
-                      break;
-                  }
-                }
-        });
-      }
-      // OBD에 JSON 데이터 보내기
-      await Future.delayed(Duration(milliseconds: await obd2.configObdWithJSON(commandJson)), (){});
-      // OBD에서 매개변수에 대한 JSON 데이터 보내기
-      await Future.delayed(Duration(milliseconds: await obd2.getParamsFromJSON(paramJson)), (){print("getDataSuccess");});
-    }
-    
+  print("getDataFromObd");
+  if (!(await obd2.isBluetoothEnable)) {
+    await obd2.enableBluetooth;
   }
+  if (await obd2.hasConnection) {
+    if (!(await obd2.isListenToDataInitialed)) {
+      obd2.setOnDataReceived((command, response, requestCode) {
+        print("$command => $response");
+        if (response.startsWith('[{')) {
+          var jsonResponse = jsonDecode(response);
+          for (var data in jsonResponse) {
+            switch (data['PID']) {
+              case 'AT RV':
+                batteryVoltage = double.tryParse(data['response']) ?? 0;
+                break;
+              case '01 0C':
+                engineRpm = double.tryParse(data['response']) ?? 0;
+                break;
+              case '01 0D':
+                vehicleSpeed = double.tryParse(data['response']) ?? 0;
+                break;
+              case '01 05':
+                engineTemp = double.tryParse(data['response']) ?? 0;
+                break;
+            }
+          }
+        }
+      });
+    }
+    await Future.delayed(Duration(milliseconds: await obd2.configObdWithJSON(commandJson)), (){print("getDataInitSuccess");});
+    await Future.delayed(Duration(milliseconds: await obd2.getParamsFromJSON(paramJson)), (){print("getDataSuccess");});
+  }
+}
 
+// OBD2 장치로부터 DTC를 가져오는 함수
+Future<void> getDtcFromObd(Obd2Plugin obd2) async {
+  print("getDtcFromObd");
+  if (!(await obd2.isBluetoothEnable)) {
+    await obd2.enableBluetooth;
+  }
+  if (await obd2.hasConnection) {
+    if (!(await obd2.isListenToDataInitialed)) {
+      obd2.setOnDataReceived((command, response, requestCode) {
+        print("$command => $response");
+        // DTC 형식에 대한 정보가 없으므로 처리하지 않음
+      });
+    }
+    await Future.delayed(Duration(milliseconds: await obd2.configObdWithJSON(commandJson)), (){});
+    await Future.delayed(Duration(milliseconds: await obd2.getDTCFromJSON(dtcJson)), (){print("getDtcSuccess");});
+  }
+}
+
+// 버튼 행 위젯 설정 함수
 Widget setButtonRow(BuildContext context, {required String firstButton, required String secondButton}) {
-  double buttonSize = MediaQuery.of(context).size.width / 2 - 20; // 화면의 가로 크기를 반으로 나눈 후 여백을 제외한 크기
+  double buttonSize = MediaQuery.of(context).size.width / 2 - 20;
 
   Future<void> monitoringVehicle() async {
     if (!isConnected) {
@@ -277,7 +294,7 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
         },
       );
     } else {
-      getDataFromObd(obd2);
+      if (engineRpm == 0 && batteryVoltage == 0) await getDataFromObd(obd2);
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const MonitoringPage()),
@@ -289,22 +306,32 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
     if (isConnected) {
       showDialog(
         context: context,
+        barrierDismissible: false,
         builder: (BuildContext context) {
-          return const AlertDialog(
+          return AlertDialog(
             title: Text("진단 중"),
-            content: Text("차량을 진단 중입니다..."),
+            content: FutureBuilder(
+              future: getDtcFromObd(obd2),
+              builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                } else {
+                  return SizedBox.shrink();
+                }
+              },
+            ),
           );
         },
       );
-      // 3초 후에 페이지 이동
-      Future.delayed(const Duration(seconds: 1), () {
-        Navigator.pop(context);
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const DiagnosisPage()),
-        );
-      });
-    }else{
+      await getDtcFromObd(obd2);
+      Navigator.pop(context);
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const DiagnosisPage()),
+      );
+    } else {
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -315,7 +342,6 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
         },
       );
     }
-    
   }
 
   return Row(

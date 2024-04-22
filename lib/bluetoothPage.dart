@@ -7,19 +7,6 @@ double vehicleSpeed = 0;
 // 엔진 온도 상태 변수
 double engineTemp = 0;
 
-double getEngineRpm(){
-    return engineRpm;
-  } 
-double getBatteryVoltage(){
-    return batteryVoltage;
-  } 
-double getVehicleSpeed(){
-    return vehicleSpeed;
-  } 
-double getEngineTemp(){
-    return engineTemp;
-  } 
-
 // OBD에 대한 커맨드를 위한 JSON 데이터
 String commandJson = '''[
             {
@@ -63,14 +50,6 @@ String commandJson = '''[
 String paramJson = '''
     [
         {
-            "PID": "AT RV",
-            "length": 4,
-            "title": "Battery Voltage",
-            "unit": "V",
-            "description": "<str>",
-            "status": true
-        },
-        {
             "PID": "01 0C",
             "length": 2,
             "title": "Engine RPM",
@@ -92,6 +71,14 @@ String paramJson = '''
             "title": "Engine Temp",
             "unit": "°C",
             "description": "<int>, [0] - 40",
+            "status": true
+        },
+        {
+            "PID": "AT RV",
+            "length": 4,
+            "title": "Battery Voltage",
+            "unit": "V",
+            "description": "<int>",
             "status": true
         }
       ]
