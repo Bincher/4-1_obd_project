@@ -87,24 +87,8 @@ String paramJson = '''
 String dtcJson = '''
             [
     {
-        "id": 1,
-        "created_at": "2021-12-05T16:33:18.965620Z",
         "command": "03",
-        "response": "6",
-        "status": true
-    },
-    {
-        "id": 3,
-        "created_at": "2021-12-05T16:33:38.323200Z",
-        "command": "0A",
-        "response": "6",
-        "status": true
-    },
-    {
-        "id": 2,
-        "created_at": "2021-12-05T16:33:28.439547Z",
-        "command": "07",
-        "response": "6",
+        "description": "",
         "status": true
     }
 ]

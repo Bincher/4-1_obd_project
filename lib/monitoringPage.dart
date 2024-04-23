@@ -3,8 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_flutter_app/bluetoothPage.dart';
 
-
-
 // tatefulWidget를 사용하여 모니터링 페이지를 구현합니다.
 class MonitoringPage extends StatefulWidget {
   const MonitoringPage({Key? key}) : super(key: key);
