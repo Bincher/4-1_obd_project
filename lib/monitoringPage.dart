@@ -1,7 +1,7 @@
 // Flutter에서 모니터링 페이지를 구성하는 코드입니다.
 
 import 'package:flutter/material.dart';
-import 'package:my_flutter_app/main.dart';
+import 'package:my_flutter_app/bluetoothPage.dart';
 
 
 
@@ -42,13 +42,6 @@ class MonitoringPageState extends State<MonitoringPage> {
     List<MonitoringCardData> filteredCards = monitoringCards.where((card) {
       return card.title.toLowerCase().contains(searchKeyword.toLowerCase());
     }).toList();
-
-    setState(() {
-      engineRpm = engineRpm;
-      batteryVoltage = batteryVoltage;
-      engineTemp = engineTemp;
-      vehicleSpeed = vehicleSpeed;
-    });
 
     return Scaffold(
       appBar: AppBar(

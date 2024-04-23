@@ -18,15 +18,6 @@ bool isConnected = false;
 // OBD2 플러그인 인스턴스 생성
 Obd2Plugin obd2 = Obd2Plugin();
 
-// 엔진 RPM 상태 변수
-double engineRpm= 0;
-// 배터리 전압 상태 변수
-double batteryVoltage = 0;
-// 속력 상태 변수
-double vehicleSpeed = 0;
-// 엔진 온도 상태 변수
-double engineTemp = 0;
-
 // 앱의 진입점
 void main() {
   // MyApp 위젯을 실행
@@ -86,7 +77,8 @@ class MainPageState extends State<MainPage> {
 
         setState(() {
           isConnected = false;
-          
+          batteryVoltage = 0;
+          engineRpm = 0;
         });
         // 연결 종료 다이얼로그 표시
         // ignore: use_build_context_synchronously
