@@ -18,6 +18,15 @@ bool isConnected = false;
 // OBD2 플러그인 인스턴스 생성
 Obd2Plugin obd2 = Obd2Plugin();
 
+// 엔진 RPM 상태 변수
+double engineRpm= 0;
+// 배터리 전압 상태 변수
+double batteryVoltage = 0;
+// 속력 상태 변수
+double vehicleSpeed = 0;
+// 엔진 온도 상태 변수
+double engineTemp = 0;
+
 // 앱의 진입점
 void main() {
   // MyApp 위젯을 실행
@@ -61,6 +70,7 @@ class MainPage extends StatefulWidget {
 // 메인 페이지 상태 클래스
 class MainPageState extends State<MainPage> {
   String bluetoothText = "OBD2 연결이 없습니다.";
+  String bluetoothButtonText = "클릭하여 장치를 연결";
 
   @override
   void initState() {
@@ -68,20 +78,22 @@ class MainPageState extends State<MainPage> {
   }
 
   // Bluetooth 장치 설정 함수
-  Future<void> setBluetoothDevice() async {
+  Future<void> setBluetoothDevice(Obd2Plugin obd2plugin) async {
     try {
       if (isConnected) {
         // 연결 종료
-        await obd2.disconnect();
+        await obd2plugin.disconnect();
+
         setState(() {
           isConnected = false;
+          
         });
-
         // 연결 종료 다이얼로그 표시
+        // ignore: use_build_context_synchronously
         showDialog(
           context: context,
           builder: (BuildContext context) {
-            return AlertDialog(
+            return const AlertDialog(
               title: Text("연결 종료"),
               content: Text("연결이 종료되었습니다."),
             );
@@ -97,17 +109,18 @@ class MainPageState extends State<MainPage> {
           await showBluetoothList(context, obd2);
 
           setState(() {
-            bluetoothText = "연결이 완료되었습니다.";
+            isConnected = true;
           });
         }
       }
     } catch (e) {
       print(e);
       isConnected = false;
+      // ignore: use_build_context_synchronously
       showDialog(
         context: context,
         builder: (BuildContext context) {
-          return AlertDialog(
+          return const AlertDialog(
             title: Text("에러!"),
             content: Text("문제가 발생했습니다."),
           );
@@ -120,6 +133,7 @@ class MainPageState extends State<MainPage> {
   Future<void> showBluetoothList(BuildContext context, Obd2Plugin obd2plugin) async {
     List<BluetoothDevice> devices = await obd2plugin.getPairedDevices;
 
+    // ignore: use_build_context_synchronously
     showModalBottomSheet(
       context: context,
       builder: (builder) {
@@ -163,12 +177,15 @@ class MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
+
     setState(() {
       // 연결 상태에 따라 Bluetooth 텍스트 업데이트
       if (isConnected) {
         bluetoothText = "OBD2 연결 성공";
+        bluetoothButtonText = "클릭하여 장치를 제거";
       } else {
         bluetoothText = "OBD2 연결 필요";
+        bluetoothButtonText = "클릭하여 장치를 연결";
       }
     });
 
@@ -194,27 +211,24 @@ class MainPageState extends State<MainPage> {
           child: Column(
             children: <Widget>[
               const SizedBox(height: 20),
-              Row(
-                children: <Widget>[
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.black,
-                      backgroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                      ),
-                    ),
-                    onPressed: () {
-                      setBluetoothDevice();
-                    },
-                    child: Text("bluetooth 설정"),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.black,
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
                   ),
-                  Text(bluetoothText),
-                ],
+                ),
+                onPressed: () {
+                  setBluetoothDevice(obd2);
+                },
+                child: Text(bluetoothButtonText),
               ),
+              Text(bluetoothText),
               const SizedBox(height: 20),
               // 버튼 행 설정
               setButtonRow(context, firstButton: '차량진단', secondButton: '모니터링'),
+              const SizedBox(height: 20),
               setButtonRow(context, firstButton: '알람', secondButton: '세팅'),
             ],
           ),
@@ -224,7 +238,7 @@ class MainPageState extends State<MainPage> {
   }
 }
 
-// OBD2 장치로부터 데이터를 가져오는 함수
+/// OBD2 장치로부터 데이터를 가져오는 함수
 Future<void> getDataFromObd(Obd2Plugin obd2) async {
   print("getDataFromObd");
   if (!(await obd2.isBluetoothEnable)) {
@@ -260,7 +274,7 @@ Future<void> getDataFromObd(Obd2Plugin obd2) async {
   }
 }
 
-// OBD2 장치로부터 DTC를 가져오는 함수
+/// OBD2 장치로부터 DTC를 가져오는 함수
 Future<void> getDtcFromObd(Obd2Plugin obd2) async {
   print("getDtcFromObd");
   if (!(await obd2.isBluetoothEnable)) {
@@ -278,7 +292,7 @@ Future<void> getDtcFromObd(Obd2Plugin obd2) async {
   }
 }
 
-// 버튼 행 위젯 설정 함수
+/// 버튼 행 위젯 설정 함수
 Widget setButtonRow(BuildContext context, {required String firstButton, required String secondButton}) {
   double buttonSize = MediaQuery.of(context).size.width / 2 - 20;
 
@@ -302,6 +316,7 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
     }
   }
 
+  // 차량 진단 
   Future<void> diagnoseVehicle() async {
     if (isConnected) {
       showDialog(
@@ -309,16 +324,16 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
         barrierDismissible: false,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text("진단 중"),
+            title: const Text("진단 중"),
             content: FutureBuilder(
               future: getDtcFromObd(obd2),
               builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return CircularProgressIndicator();
+                  return const CircularProgressIndicator();
                 } else if (snapshot.hasError) {
                   return Text('Error: ${snapshot.error}');
                 } else {
-                  return SizedBox.shrink();
+                  return const SizedBox.shrink();
                 }
               },
             ),

@@ -1,11 +1,3 @@
-// 엔진 RPM 상태 변수
-double engineRpm = 0;
-// 배터리 전압 상태 변수
-double batteryVoltage = 0;
-// 속력 상태 변수
-double vehicleSpeed = 0;
-// 엔진 온도 상태 변수
-double engineTemp = 0;
 
 // OBD에 대한 커맨드를 위한 JSON 데이터
 String commandJson = '''[
