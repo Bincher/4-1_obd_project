@@ -3,6 +3,7 @@
 // 필요한 라이브러리를 가져옵니다.
 import 'dart:async'; // 비동기 작업을 위한 라이브러리
 import 'dart:convert'; // JSON 데이터 처리를 위한 라이브러리
+import 'dart:math';
 
 import 'package:flutter/material.dart'; // 플러터 UI 프레임워크
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart'; // Bluetooth 관련 기능을 위한 라이브러리
@@ -14,9 +15,10 @@ import 'package:my_flutter_app/settingPage.dart'; // 세팅 페이지
 import 'package:my_flutter_app/obd2_plugin.dart'; // OBD2 플러그인
 
 // Bluetooth 연결 상태를 나타내는 전역 변수
-bool isConnected = false;
+// bool isConnected = false;
 // OBD2 플러그인 인스턴스 생성
 Obd2Plugin obd2 = Obd2Plugin();
+Random random = Random();
 
 // 앱의 진입점
 void main() {
@@ -24,9 +26,15 @@ void main() {
   runApp(const MyApp());
 
   // 1분마다 데이터를 가져오기 위한 타이머 설정
-  Timer.periodic(const Duration(minutes: 1), (timer) async {
+  Timer.periodic(const Duration(seconds: 5), (timer) async {
     // 연결된 상태라면 OBD2 장치로부터 데이터 가져오기
-    if (isConnected) await getDataFromObd(obd2);
+    // if (isConnected) await getDataFromObd(obd2);
+
+    engineRpm = random.nextDouble() * 100;
+    batteryVoltage = random.nextDouble() * 100;
+    engineTemp = random.nextDouble() * 100;
+    vehicleSpeed = random.nextDouble() * 100;
+    print("change Data");
   });
 }
 
@@ -70,55 +78,55 @@ class MainPageState extends State<MainPage> {
 
   // Bluetooth 장치 설정 함수
   Future<void> setBluetoothDevice(Obd2Plugin obd2plugin) async {
-    try {
-      if (isConnected) {
-        // 연결 종료
-        await obd2plugin.disconnect();
+    // try {
+    //   if (isConnected) {
+    //     // 연결 종료
+    //     await obd2plugin.disconnect();
 
-        setState(() {
-          isConnected = false;
-          batteryVoltage = 0;
-          engineRpm = 0;
-        });
-        // 연결 종료 다이얼로그 표시
-        // ignore: use_build_context_synchronously
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return const AlertDialog(
-              title: Text("연결 종료"),
-              content: Text("연결이 종료되었습니다."),
-            );
-          },
-        );
-      } else {
-        // Bluetooth 활성화 상태 확인
-        if (!(await obd2.isBluetoothEnable)) {
-          await obd2.enableBluetooth;
-        }
-        // 연결되어 있지 않다면 Bluetooth 장치 목록 표시
-        if (!(await obd2.hasConnection)) {
-          await showBluetoothList(context, obd2);
+    //     setState(() {
+    //       isConnected = false;
+    //       batteryVoltage = 0;
+    //       engineRpm = 0;
+    //     });
+    //     // 연결 종료 다이얼로그 표시
+    //     // ignore: use_build_context_synchronously
+    //     showDialog(
+    //       context: context,
+    //       builder: (BuildContext context) {
+    //         return const AlertDialog(
+    //           title: Text("연결 종료"),
+    //           content: Text("연결이 종료되었습니다."),
+    //         );
+    //       },
+    //     );
+    //   } else {
+    //     // Bluetooth 활성화 상태 확인
+    //     if (!(await obd2.isBluetoothEnable)) {
+    //       await obd2.enableBluetooth;
+    //     }
+    //     // 연결되어 있지 않다면 Bluetooth 장치 목록 표시
+    //     if (!(await obd2.hasConnection)) {
+    //       await showBluetoothList(context, obd2);
 
-          setState(() {
-            isConnected = true;
-          });
-        }
-      }
-    } catch (e) {
-      print(e);
-      isConnected = false;
-      // ignore: use_build_context_synchronously
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return const AlertDialog(
-            title: Text("에러!"),
-            content: Text("문제가 발생했습니다."),
-          );
-        },
-      );
-    }
+    //       setState(() {
+    //         isConnected = true;
+    //       });
+    //     }
+    //   }
+    // } catch (e) {
+    //   print(e);
+    //   isConnected = false;
+    //   // ignore: use_build_context_synchronously
+    //   showDialog(
+    //     context: context,
+    //     builder: (BuildContext context) {
+    //       return const AlertDialog(
+    //         title: Text("에러!"),
+    //         content: Text("문제가 발생했습니다."),
+    //       );
+    //     },
+    //   );
+    // }
   }
 
   // Bluetooth 장치 목록을 표시하는 함수
@@ -143,13 +151,13 @@ class MainPageState extends State<MainPage> {
                     // 선택된 Bluetooth 장치에 연결
                     obd2plugin.getConnection(devices[index], (connection) {
                       setState(() {
-                        isConnected = true;
+                        // isConnected = true;
                       });
                       print("connected to bluetooth device.");
                       Navigator.pop(builder);
                     }, (message) {
                       setState(() {
-                        isConnected = false;
+                        // isConnected = false;
                       });
                       print("error in connecting: $message");
                       Navigator.pop(builder);
@@ -170,16 +178,16 @@ class MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
 
-    setState(() {
-      // 연결 상태에 따라 Bluetooth 텍스트 업데이트
-      if (isConnected) {
-        bluetoothText = "OBD2 연결 성공";
-        bluetoothButtonText = "클릭하여 장치를 제거";
-      } else {
-        bluetoothText = "OBD2 연결 필요";
-        bluetoothButtonText = "클릭하여 장치를 연결";
-      }
-    });
+    // setState(() {
+    //   // 연결 상태에 따라 Bluetooth 텍스트 업데이트
+    //   if (isConnected) {
+    //     bluetoothText = "OBD2 연결 성공";
+    //     bluetoothButtonText = "클릭하여 장치를 제거";
+    //   } else {
+    //     bluetoothText = "OBD2 연결 필요";
+    //     bluetoothButtonText = "클릭하여 장치를 연결";
+    //   }
+    // });
 
     return Scaffold(
       appBar: AppBar(
@@ -289,65 +297,80 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
   double buttonSize = MediaQuery.of(context).size.width / 2 - 20;
 
   Future<void> monitoringVehicle() async {
-    if (!isConnected) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return const AlertDialog(
-            title: Text("블루투스 에러!"),
-            content: Text("obd2가 연결되어있지 않습니다. 블루투스 버튼을 눌려 연결하여주십시오."),
-          );
-        },
-      );
-    } else {
-      if (engineRpm == 0 && batteryVoltage == 0) await getDataFromObd(obd2);
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const MonitoringPage()),
-      );
+    // if (!isConnected) {
+    //   showDialog(
+    //     context: context,
+    //     builder: (BuildContext context) {
+    //       return const AlertDialog(
+    //         title: Text("블루투스 에러!"),
+    //         content: Text("obd2가 연결되어있지 않습니다. 블루투스 버튼을 눌려 연결하여주십시오."),
+    //       );
+    //     },
+    //   );
+    // } else {
+    //   if (engineRpm == 0 && batteryVoltage == 0) await getDataFromObd(obd2);
+    //   Navigator.push(
+    //     context,
+    //     MaterialPageRoute(builder: (context) => const MonitoringPage()),
+    //   );
+    // }
+    
+
+    
+    //if (engineRpm == 0 && batteryVoltage == 0) await getDataFromObd(obd2);
+    if (engineRpm == 0 && batteryVoltage == 0){
+      engineRpm = random.nextDouble() * 100;
+      batteryVoltage = random.nextDouble() * 100;
+      engineTemp = random.nextDouble() * 100;
+      vehicleSpeed = random.nextDouble() * 100;
     }
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const MonitoringPage()),
+    );
   }
 
   // 차량 진단 
   Future<void> diagnoseVehicle() async {
-    if (isConnected) {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text("진단 중"),
-            content: FutureBuilder(
-              future: getDtcFromObd(obd2),
-              builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator();
-                } else if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
-                } else {
-                  return const SizedBox.shrink();
-                }
-              },
-            ),
-          );
-        },
-      );
-      await getDtcFromObd(obd2);
-      Navigator.pop(context);
+    if (true) {
+      // showDialog(
+      //   context: context,
+      //   barrierDismissible: false,
+      //   builder: (BuildContext context) {
+      //     return AlertDialog(
+      //       title: const Text("진단 중"),
+      //       content: FutureBuilder(
+      //         future: getDtcFromObd(obd2),
+      //         builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
+      //           if (snapshot.connectionState == ConnectionState.waiting) {
+      //             return const CircularProgressIndicator();
+      //           } else if (snapshot.hasError) {
+      //             return Text('Error: ${snapshot.error}');
+      //           } else {
+      //             return const SizedBox.shrink();
+      //           }
+      //         },
+      //       ),
+      //     );
+      //   },
+      // );
+      // await getDtcFromObd(obd2);
+      // Navigator.pop(context);
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const DiagnosisPage()),
       );
+    // ignore: dead_code
     } else {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return const AlertDialog(
-            title: Text("블루투스 에러!"),
-            content: Text("obd2가 연결되어있지 않습니다. 블루투스 버튼을 눌려 연결하여주십시오."),
-          );
-        },
-      );
+      // showDialog(
+      //   context: context,
+      //   builder: (BuildContext context) {
+      //     return const AlertDialog(
+      //       title: Text("블루투스 에러!"),
+      //       content: Text("obd2가 연결되어있지 않습니다. 블루투스 버튼을 눌려 연결하여주십시오."),
+      //     );
+      //   },
+      // );
     }
   }
 

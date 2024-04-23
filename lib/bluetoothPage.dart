@@ -6,6 +6,9 @@ double batteryVoltage = 0;
 double vehicleSpeed = 0;
 // 엔진 온도 상태 변수
 double engineTemp = 0;
+// DTC 변수(예제)
+List<String> DTC = ['P0001', 'P0200'];
+
 // OBD에 대한 커맨드를 위한 JSON 데이터
 String commandJson = '''[
             {
