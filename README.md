@@ -6,9 +6,21 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
 
 안내
 
-- 블루투스 없는 버전 : https://github.com/Bincher/4-1_obd_project/tree/main/lib
+- 블루투스 없는 버전 : https://github.com/Bincher/4-1_obd_project/blob/ee376c858e70c59828551f8e51188ed4c13da077/lib/bluetoothPage.dart
 
 - 블루투스 있는 버전 : https://github.com/Bincher/4-1_obd_project/blob/0065cfad3d738445b842c131fffe812489e56249/lib/main.dart
+
+- 노션 업데이트 예정 : https://bincher.notion.site/APP-1-a94b22d3d0d14595bbbe7689ab74f201?pvs=4
+
+    - 기존 노션 : https://bincher.notion.site/OBD-3ff8c205246d4af09e46f92234ca2822?pvs=4
+
+- 진단페이지 구성
+
+    1. 문제 발생시 진단 페이지
+
+    2. 상세 보기
+
+    3. chat-gpt api를 이용한 3가지 정보 받고 출력하기
 
 진행상황 (2024.04.22)
 
