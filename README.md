@@ -6,7 +6,7 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
 
 안내
 
-- 블루투스 없는 버전 : https://github.com/Bincher/4-1_obd_project/blob/ee376c858e70c59828551f8e51188ed4c13da077/lib/bluetoothPage.dart
+- 블루투스 없는 버전 : https://github.com/Bincher/4-1_obd_project/tree/main/lib
 
 - 블루투스 있는 버전 : https://github.com/Bincher/4-1_obd_project/blob/0065cfad3d738445b842c131fffe812489e56249/lib/main.dart
 
