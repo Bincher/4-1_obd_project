@@ -1,7 +1,7 @@
 // Flutter에서 모니터링 페이지를 구성하는 코드입니다.
 
 import 'package:flutter/material.dart';
-import 'package:my_flutter_app/bluetoothPage.dart';
+import 'package:my_flutter_app/obdData.dart';
 
 // tatefulWidget를 사용하여 모니터링 페이지를 구현합니다.
 class MonitoringPage extends StatefulWidget {

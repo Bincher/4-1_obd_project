@@ -6,9 +6,13 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
 
 안내
 
-- 블루투스 없는 버전 : https://github.com/Bincher/4-1_obd_project/tree/main/lib
+- 중요 !!! : 안드로이드 환경에서 실행시 블루투스 권한 설정할때 에러와 함께 튕기는 상황
 
-- 블루투스 있는 버전 : https://github.com/Bincher/4-1_obd_project/blob/0065cfad3d738445b842c131fffe812489e56249/lib/main.dart
+    -  프로젝트의 pubspec.yaml 파일을 수정하는 과정에서 문제가 발생한걸로 추정
+
+- 블루투스 없는 버전 : mainNoBluetooth.dart 실행
+
+- 블루투스 있는 버전 : main.dart 실행
 
 - 노션 업데이트 예정 : https://bincher.notion.site/APP-1-a94b22d3d0d14595bbbe7689ab74f201?pvs=4
 
