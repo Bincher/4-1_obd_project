@@ -1,7 +1,7 @@
 // Flutter에서 모니터링 페이지를 구성하는 코드입니다.
 
 import 'package:flutter/material.dart';
-import 'package:my_flutter_app/obdData.dart';
+import 'obdData.dart';
 
 // tatefulWidget를 사용하여 모니터링 페이지를 구현합니다.
 class MonitoringPage extends StatefulWidget {
@@ -18,16 +18,7 @@ class MonitoringPage extends StatefulWidget {
 class MonitoringPageState extends State<MonitoringPage> {
 
   String searchKeyword = "";
-  // 모니터링 카드 데이터 목록
-
-  // 초기화 시 모니터링 카드 데이터 초기화
-    List<MonitoringCardData> monitoringCards = [
-      MonitoringCardData(title: '엔진 온도\n${engineTemp}도', dialogTitle: '엔진 온도', dialogContent: '그래프'),
-      MonitoringCardData(title: '배터리 전압\n${batteryVoltage} V', dialogTitle: '배터리 전압', dialogContent: '그래프'),
-      MonitoringCardData(title: '엔진 RPM\n${engineRpm} RPM', dialogTitle: '엔진 RPM', dialogContent: '그래프'),
-      MonitoringCardData(title: '속력\n${vehicleSpeed} km/h', dialogTitle: '속력', dialogContent: '그래프'),
-    ];
-    
+  
   
   @override
   void initState() {
@@ -36,6 +27,14 @@ class MonitoringPageState extends State<MonitoringPage> {
 
   @override
   Widget build(BuildContext context) {
+
+    // 모니터링 카드 데이터 목록
+    List<MonitoringCardData> monitoringCards = [
+      MonitoringCardData(title: '엔진 온도\n$engineTemp도', dialogTitle: '엔진 온도', dialogContent: '그래프'),
+      MonitoringCardData(title: '배터리 전압\n$batteryVoltage V', dialogTitle: '배터리 전압', dialogContent: '그래프'),
+      MonitoringCardData(title: '엔진 RPM\n$engineRpm RPM', dialogTitle: '엔진 RPM', dialogContent: '그래프'),
+      MonitoringCardData(title: '속력\n$vehicleSpeed km/h', dialogTitle: '속력', dialogContent: '그래프'),
+    ];
     // 검색어에 따라 필터된 모니터링 카드 데이터 목록 생성
     List<MonitoringCardData> filteredCards = monitoringCards.where((card) {
       return card.title.toLowerCase().contains(searchKeyword.toLowerCase());

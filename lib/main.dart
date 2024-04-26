@@ -6,12 +6,12 @@ import 'dart:convert'; // JSON 데이터 처리를 위한 라이브러리
 
 import 'package:flutter/material.dart'; // 플러터 UI 프레임워크
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart'; // Bluetooth 관련 기능을 위한 라이브러리
-import 'package:my_flutter_app/allimPage.dart'; // 알람 페이지
-import 'package:my_flutter_app/diagnosisPage.dart'; // 진단 페이지
-import 'package:my_flutter_app/monitoringPage.dart'; // 모니터링 페이지
-import 'package:my_flutter_app/settingPage.dart'; // 세팅 페이지
-import 'package:my_flutter_app/obd2_plugin.dart'; // OBD2 플러그인
-import 'package:my_flutter_app/obdData.dart';
+import 'allimPage.dart'; // 알람 페이지
+import 'diagnosisPage.dart'; // 진단 페이지
+import 'monitoringPage.dart'; // 모니터링 페이지
+import 'settingPage.dart'; // 세팅 페이지
+import 'obd2_plugin.dart'; // OBD2 플러그인
+import 'obdData.dart';
 
 /// 블루투스 연결 여부 전역 변수
 bool isConnected = false;
@@ -269,7 +269,7 @@ Future<void> getDataFromObd(Obd2Plugin obd2) async {
       });
     }
     await Future.delayed(Duration(milliseconds: await obd2.configObdWithJSON(commandJson)), (){});
-    await Future.delayed(Duration(milliseconds: await obd2.getParamsFromJSON(paramJson)), (){print("getDataSuccess");});
+    await Future.delayed(Duration(milliseconds: await obd2.getParamsFromJSON(paramJson)), (){});
   }
 }
 
