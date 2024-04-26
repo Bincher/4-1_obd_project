@@ -1,15 +1,13 @@
 // main.dart
 import 'dart:async'; // 비동기 작업
-import 'dart:convert'; // JSON 데이터 처리
+// JSON 데이터 처리
 import 'dart:math'; 
 
 import 'package:flutter/material.dart'; // 플러터 UI 프레임워크
-import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart'; // Bluetooth 관련 기능을 위한 라이브러리
 import 'package:my_flutter_app/allimPage.dart'; // 알람 페이지
 import 'package:my_flutter_app/diagnosisPage.dart'; // 진단 페이지
 import 'package:my_flutter_app/monitoringPage.dart'; // 모니터링 페이지
 import 'package:my_flutter_app/settingPage.dart'; // 세팅 페이지
-import 'package:my_flutter_app/obd2_plugin.dart'; // OBD2 플러그인
 import 'package:my_flutter_app/obdData.dart';
 
 Random random = Random();
@@ -70,56 +68,7 @@ class MainPageState extends State<MainPage> {
     super.initState();
   }
 
-  // Bluetooth 장치 설정 함수
-  Future<void> setBluetoothDevice(Obd2Plugin obd2plugin) async {
 
-  }
-
-  // Bluetooth 장치 목록을 표시하는 함수
-  Future<void> showBluetoothList(BuildContext context, Obd2Plugin obd2plugin) async {
-    List<BluetoothDevice> devices = await obd2plugin.getPairedDevices;
-
-    // ignore: use_build_context_synchronously
-    showModalBottomSheet(
-      context: context,
-      builder: (builder) {
-        return Container(
-          padding: const EdgeInsets.only(top: 0),
-          width: double.infinity,
-          height: devices.length * 50,
-          child: ListView.builder(
-            itemCount: devices.length,
-            itemBuilder: (context, index) {
-              return SizedBox(
-                height: 50,
-                child: TextButton(
-                  onPressed: () {
-                    // 선택된 Bluetooth 장치에 연결
-                    obd2plugin.getConnection(devices[index], (connection) {
-                      setState(() {
-                        // isConnected = true;
-                      });
-                      print("connected to bluetooth device.");
-                      Navigator.pop(builder);
-                    }, (message) {
-                      setState(() {
-                        // isConnected = false;
-                      });
-                      print("error in connecting: $message");
-                      Navigator.pop(builder);
-                    });
-                  },
-                  child: Center(
-                    child: Text(devices[index].name.toString()),
-                  ),
-                ),
-              );
-            },
-          ),
-        );
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -173,59 +122,7 @@ class MainPageState extends State<MainPage> {
   }
 }
 
-/// OBD2 장치로부터 데이터를 가져오는 함수
-Future<void> getDataFromObd(Obd2Plugin obd2) async {
-  print("getDataFromObd");
-  if (!(await obd2.isBluetoothEnable)) {
-    await obd2.enableBluetooth;
-  }
-  if (await obd2.hasConnection) {
-    if (!(await obd2.isListenToDataInitialed)) {
-      obd2.setOnDataReceived((command, response, requestCode) {
-        print("$command => $response");
-        if (response.startsWith('[{')) {
-          var jsonResponse = jsonDecode(response);
-          for (var data in jsonResponse) {
-            switch (data['PID']) {
-              case 'AT RV':
-                batteryVoltage = double.tryParse(data['response']) ?? 0;
-                break;
-              case '01 0C':
-                engineRpm = double.tryParse(data['response']) ?? 0;
-                break;
-              case '01 0D':
-                vehicleSpeed = double.tryParse(data['response']) ?? 0;
-                break;
-              case '01 05':
-                engineTemp = double.tryParse(data['response']) ?? 0;
-                break;
-            }
-          }
-        }
-      });
-    }
-    await Future.delayed(Duration(milliseconds: await obd2.configObdWithJSON(commandJson)), (){print("getDataInitSuccess");});
-    await Future.delayed(Duration(milliseconds: await obd2.getParamsFromJSON(paramJson)), (){print("getDataSuccess");});
-  }
-}
 
-/// OBD2 장치로부터 DTC를 가져오는 함수
-Future<void> getDtcFromObd(Obd2Plugin obd2) async {
-  print("getDtcFromObd");
-  if (!(await obd2.isBluetoothEnable)) {
-    await obd2.enableBluetooth;
-  }
-  if (await obd2.hasConnection) {
-    if (!(await obd2.isListenToDataInitialed)) {
-      obd2.setOnDataReceived((command, response, requestCode) {
-        print("$command => $response");
-        // DTC 형식에 대한 정보가 없으므로 처리하지 않음
-      });
-    }
-    await Future.delayed(Duration(milliseconds: await obd2.configObdWithJSON(commandJson)), (){});
-    await Future.delayed(Duration(milliseconds: await obd2.getDTCFromJSON(dtcJson)), (){print("getDtcSuccess");});
-  }
-}
 
 /// 버튼 행 위젯 설정 함수
 Widget setButtonRow(BuildContext context, {required String firstButton, required String secondButton}) {
