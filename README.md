@@ -6,6 +6,8 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
 
 안내
 
+- 실행하실때 chat-GPT api-key는 꼭 넣어주세요. 여기선 보안상 뺐습니다.
+
 - 이슈 : 안드로이드 환경에서 실행시 블루투스 권한 설정할때 에러와 함께 튕기는 상황 (해결)
 
     - https://stackoverflow.com/questions/75906535/flutter-bluetooth-permission-missing-in-manifest
@@ -18,13 +20,17 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
 
 - 블루투스 없는 버전 : mainNoBluetooth.dart 실행
 
+    - 다만, 일부 기능은 사용이 불가하며 일부 기능은 사소한 버그가 존재할 수 있음
+
 - 블루투스 있는 버전 : main.dart 실행
 
 - 노션 업데이트 예정 : https://bincher.notion.site/APP-1-a94b22d3d0d14595bbbe7689ab74f201?pvs=4
 
     - 기존 노션 : https://bincher.notion.site/OBD-3ff8c205246d4af09e46f92234ca2822?pvs=4
 
-    - 노션은 주말내에 업데이트하겠습니다...
+    - 노션은 수요일전까지 업데이트 하겠습니다...
+
+    - 일단, 스크린샷 화면은 올려놓겠습니다
 
 - 진단페이지 구성
 
@@ -34,23 +40,19 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
 
     3. chat-gpt api를 이용한 3가지 정보 받고 출력하기
 
-    - 월요일 저녁까지 완성해주시면 제가 종합하겠습니다
-
-진행상황 (2024.04.22)
+진행상황 (2024.04.29)
 
 1. main.dart
 
     - 기본적인 버튼 구조는 완성
 
-        - Bluetooth 버튼 및 연결 여부 text는 임시로 둔 것
+        - Bluetooth 버튼 및 연결 여부 text는 연결 상황에 따라 작동되도록 구성
 
-        - 현재 text는 setState로 그럴듯하게 실행
+        - 맨 밑의 2개 버튼은 test를 위한 임시 버튼으로, 실제 구현시에는 제거할 예정
 
     - 블루투스 연결 버튼
 
         - 버튼을 클릭하면 기기 선택 후 연결
-
-            - 이때 getObdData도 할려고 했으나 아마 초기화문제로 실행은 안되는듯함
 
         - 다시 버튼을 클릭하면 연결 종료
 
@@ -70,6 +72,8 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
 
     - 차량진단 버튼 -> diagnosisPage.dart 와 연결
 
+        - 차량진단 오류 버튼 -> diagnosisPage.dart 와 연결됨과 동시에 오류코드가 존재할때의 페이지를 출력
+
     - 모니터링 버튼 -> monitoringPage.dart 와 연결
 
     - 알람 버튼 -> allimPage.dart 와 연결
@@ -84,7 +88,7 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
 
         - 에러코드를 받아온다
 
-        - 이 과정에서 다이얼로그 화면을 띄운다(gpt가 만들어준건데 진짜 잘만들었다.)
+        - 이 과정에서 다이얼로그 화면을 띄운다
 
     - 결과물에는 차량진단과 고장코드 출력
 
@@ -94,13 +98,27 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
 
         - 위 내용을 바탕으로 추측해서 만드는 것이 최선
 
-    - 고장 코드가 있을 때 표시되는 내용 위젯에 대한 테스트는 아직 진행 안해봄
+    - 고장 코드가 있을 때 표시되는 내용 위젯
 
-    - 현재 임시로 버튼 하나를 만들고 클릭시 상세페이지 나오도록 수정
+        - 차량진단 오류 버튼을 누르면 진단 결과 P0001과 P0200이 나오는 것을 가정
 
-        - 상세페이지 내용은 하드코딩됨
+        - 차량 진단 결과와 고장 코드에 대한 정보를 출력
 
-        - 이후 수정할 예정
+        - 고장 코드는 I버튼을 통해 자세한 정보를 출력 가능
+
+            - 이때 자세한 정보는 Chat-gpt를 이용하여 출력
+
+    - 사소한 이슈 : (context as Element).reassemble(); 에서 경고가 발생
+
+        - 경고 : The member 'reassemble' can only be used within instance members of subclasses of 'package:flutter/src/widgets/framework.dart'.dart(invalid_use_of_protected_member)
+
+        - 설명 : reassemble() 메서드는 Element 클래스의 protected member 이며, 따라서 Element의 하위 클래스의 인스턴스 멤버 내에서만 사용할 수 있습니다. 현재 코드에서 context 변수를 이용하여 reassemble() 메서드를 호출하고 있는데, context는 StatefulWidget 또는 StatelessWidget의 build 메서드 내에서만 사용되는 것이 좋습니다.
+
+        - 실행에 문제가 되는건 아니기때문에 최후 순위로 둘 예정
+
+    - 추가 사항 : subtitle: Text(content), // Null 체크를 추가 -> flutter 권장대로 제거했습니다 (?? : "contents")
+
+        - 플러터 권장에 따라 ?? 를 삭제하였습니다.
 
 3. monitoringPage.dart
 
@@ -115,6 +133,8 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
         - 다른 페이지에 갔다와야 반영
 
         - setState를 사용하면 쉽게 될 줄 알았지만 생각외로 쉽게 안됨
+
+        - 새로고침 버튼을 활용할 생각도 있음 
 
     - 오른쪽 i버튼을 누르면 다이얼로그 생성
 
@@ -136,9 +156,7 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
 
 7. obdData.dart
 
-    - 변수 저장소
-
-    - 필요에따라 없앨 예정
+    - 필요한 변수나 데이터들을 저장
 
 - 참고
     - Command 목록

@@ -1,13 +1,19 @@
+// diagnosisPage.dart
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'obdData.dart';
 
-// 진단 페이지 위젯
+/// 진단 페이지 위젯
 class DiagnosisPage extends StatelessWidget {
-  final List<String>? diagnosticCodes;
+  /// 진단 코드 리스트
+  final List<SampleDiagnosticCodeData>? diagnosticCodes;
 
   const DiagnosisPage({Key? key, this.diagnosticCodes}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('차량진단'),
@@ -31,48 +37,40 @@ class DiagnosisPage extends StatelessWidget {
             const SizedBox(height: 20.0),
             diagnosticCodes == null || diagnosticCodes!.isEmpty
                 ? _buildNoDiagnosticCodesCardContent()
-                : _buildDiagnosticCodesCardContent(),
-            ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.black,
-                  backgroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => (troubleshootingScreen(context))),
-                  );
-                },
-                child: Text("더보기"),
-              )
+                : Column(
+                    // 희홍: Column으로 고장 코드 카드 위젯 반환
+                    children: diagnosticCodes!.map((code) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: _buildDiagnosticCodesCardContent(code, context),
+                      );
+                    }).toList(),
+                  )
           ],
-          
         ),
       ),
     );
   }
 
-  // 고장 코드가 없을 때 표시되는 카드 위젯
+
+  /// 고장 코드가 없을 때 표시되는 카드 위젯
   Widget _buildNoDiagnosticCodesCard() {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 20.0),
+    return const Card(
+      margin: EdgeInsets.symmetric(horizontal: 20.0),
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: EdgeInsets.all(20.0),
         child: Column(
           children: [
-            const Text(
+            Text(
               '이상 없음',
               style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w500),
             ),
-            const SizedBox(height: 10.0),
-            const Text(
+            SizedBox(height: 10.0),
+            Text(
               '0개의 고장 코드 발견',
               style: TextStyle(fontSize: 18.0),
             ),
-            const Text(
+            Text(
               '모든 장치에 이상 없음',
               style: TextStyle(fontSize: 18.0),
             ),
@@ -82,7 +80,7 @@ class DiagnosisPage extends StatelessWidget {
     );
   }
 
-  // 고장 코드가 있을 때 표시되는 카드 위젯
+  /// 고장 코드가 있을 때 표시되는 카드 위젯
   Widget _buildDiagnosticCodesCard() {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -99,12 +97,9 @@ class DiagnosisPage extends StatelessWidget {
               '${diagnosticCodes!.length}개의 고장 코드 발견',
               style: const TextStyle(fontSize: 18.0),
             ),
-            const Text(
-              '해당 장치에 문제 발생',
-              style: TextStyle(fontSize: 18.0),
-            ),
             Text(
-              diagnosticCodes!.join(', '),
+              // 희홍: 문제가 있는 장치를 객체에 접근해서 추출
+              '문제가 있는 장치: ${diagnosticCodes!.map((code) => code.devices).join(', ')}',
               style: const TextStyle(fontSize: 18.0),
             ),
           ],
@@ -113,12 +108,12 @@ class DiagnosisPage extends StatelessWidget {
     );
   }
 
-  // 고장 코드가 없을 때 표시되는 내용 위젯
+  /// 고장 코드가 없을 때 표시되는 내용 위젯
   Widget _buildNoDiagnosticCodesCardContent() {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 20.0),
+    return const Card(
+      margin: EdgeInsets.symmetric(horizontal: 20.0),
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: EdgeInsets.all(20.0),
         child: Text(
           '고장코드가 없습니다',
           style: TextStyle(fontSize: 18.0),
@@ -127,119 +122,144 @@ class DiagnosisPage extends StatelessWidget {
     );
   }
 
-  // 고장 코드가 있을 때 표시되는 내용 위젯
-  Widget _buildDiagnosticCodesCardContent() {
+  /// 고장 코드가 있을 때 표시되는 내용 위젯
+  Widget _buildDiagnosticCodesCardContent(
+      SampleDiagnosticCodeData code, BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 20.0),
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: diagnosticCodes!
-              .map(
-                (code) => Text(
-                  code,
-                  style: const TextStyle(fontSize: 18.0),
-                ),
-              )
-              .toList(),
+      child: ListTile(
+        title: Text(code.code),
+        subtitle: Text(code.desctiption),
+        trailing: IconButton(
+          icon: const Icon(Icons.info),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => chatGPTOpinionScreen(context, code)),
+            );
+          },
         ),
       ),
     );
   }
-
-
 }
 
-
-
-
-  @override
-  Widget troubleshootingScreen(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('상세보기'),
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Text(
-                '고장 코드',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18.0,
-                  // 추가적인 스타일 설정 가능
-                ),
-              ),
-            ),
-            SizedBox(height: 8.0), // 타이틀과 내용 간격 조정
-            Center(
-              child: Text(
-                'P0001',
-                style: TextStyle(
-                  
-                  fontSize: 16.0,
-                ),
-              ),
-            ),
-            SizedBox(height: 8.0),
-            Card(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ListTile(
-                    title: Text('부가 설명', style: TextStyle(fontWeight: FontWeight.bold)), // 타이틀 굵게 표시
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0), // 내용 간격 조정
-                    subtitle: Text(
-                      '연료량 조절 회로나 특히 연료량 조절 밸브의 기능에 직접적인 영향을 미치는 문제를 지시합니다. 연료량 조절 밸브는 연료 공급을 조절하여 엔진으로의 연료 흐름을 관리합니다.',
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Card(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ListTile(
-                    title: Text('원인', style: TextStyle(fontWeight: FontWeight.bold)), // 타이틀 굵게 표시
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0), // 내용 간격 조정
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('- 연료량 조절 밸브 고장 (예시 데이터)'),
-                        Text('- 연료량 조절 회로의 전기적 문제 (예시 데이터)'),
-                        Text('- ECU(엔진 제어 장치) 문제 (예시 데이터)'),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Card(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ListTile(
-                    title: Text('해결 방안', style: TextStyle(fontWeight: FontWeight.bold)), // 타이틀 굵게 표시
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0), // 내용 간격 조정
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('연료량 조절 밸브와 관련된 모든 전기 연결과 와이어링을 점검합니다. (예시 데이터)'),
-                        Text('손상, 착용, 느슨한 연결 또는 부식된 커넥터가 없는지 확인합니다 (예시 데이터)'),
-                        Text('연료 압력 조절기와 연료량 조절 밸브 주변의 연료 (예시 데이터)'),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+/// chatGPT를 이용한 상세화면 
+Widget chatGPTOpinionScreen(BuildContext context, SampleDiagnosticCodeData code) {
+  final String codeAsString = code.toString();
+  return Scaffold(
+    appBar: AppBar(
+      title: const Text('ChatGPT 의견'),
+      actions: [
+        IconButton( //새로고침 버튼 추가
+          icon: Icon(Icons.refresh),
+          onPressed: () {
+            // 상태를 업데이트하는 로직을 추가
+            (context as Element).reassemble();
+          },
         ),
-      ),
+      ],
+    ),
+    //futureBuilder 를 이용해서 비동기적으로 데이터를 받아옴
+    body: FutureBuilder(
+      future: fetchChatGPTResponse(codeAsString),
+      builder: (BuildContext context, AsyncSnapshot<Map<String, String>> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error.toString()}'));
+        } else if (!snapshot.hasData || snapshot.data == null) {
+          return const Center(child: Text("No data available"));
+        } else {
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Text(
+                '고장 코드',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24.0),
+                ),
+                Text(
+                  '$code',
+                  style: TextStyle(fontSize: 20.0),
+                ),
+                SizedBox(height: 20.0), // 공백을 위한 SizedBox
+                _buildResponseCard('부가 설명', snapshot.data?['description'] ?? 'No data'),
+                _buildResponseCard('원인', snapshot.data?['cause'] ?? 'No data'),
+                _buildResponseCard('해결 방안', snapshot.data?['solution'] ?? 'No data'),
+              ],
+            ),
+          );
+        }
+      },
+    ),
+  );
+}
+
+/// gpt를 통한 결과물을 출력할 카드
+Widget _buildResponseCard(String title, String content) {
+  return Card(
+    child: ListTile(
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+      subtitle: Text(content), // Null 체크를 추가 -> flutter 권장대로 제거했습니다 (?? : "contents")
+    ),
+  );
+}
+
+/// GPT Request와 Response
+Future<Map<String, String>> fetchChatGPTResponse(String code) async {
+  const apiKey = 'API_KEY'; // 보안 문제로 제거, 따로 추가해주세요
+  const apiUrl = 'https://api.openai.com/v1/chat/completions';
+
+  Map<String, String> results = {
+    'description': '정보 없음',
+    'cause': '정보 없음',
+    'solution': '정보 없음',
+  };
+
+  // API에 특정 요청을 보내는 함수
+  // prompt에 따라 다른 파트의 내용을 가져옴
+  Future<String> fetchPart(String prompt) async {
+    final response = await http.post(
+      Uri.parse(apiUrl),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $apiKey',
+      },
+      body: json.encode({
+        'model': 'gpt-3.5-turbo',
+        'messages': [
+          {'role': 'system', 'content': 'You are a helpful assistant.'},
+          {'role': 'user', 'content': prompt}
+        ],
+        'max_tokens': 300, // 최대 300 토큰이 리미트
+      }),
     );
+
+    if (response.statusCode == 200) {
+      final responseData = json.decode(utf8.decode(response.bodyBytes));
+      final content = responseData['choices'][0]['message']['content'];
+      return content.trim();
+    } else {
+      throw Exception('Failed to load part: Status code ${response.statusCode}');
+    }
   }
 
+  // 비동기적 처리
+  try {
+    final description = fetchPart("자동차 진단코드 $code에 대한 기본적인 설명을 간결하게 한글로 말해줘");
+    final cause = fetchPart("자동차 진단코드 $code의 원인을  다른 말은 붙이지말고 3가지만 한글로 말해줘");
+    final solution = fetchPart("자동차 진단코드 $code의 다른 설명은 하지말고 해결방안을 300자 이내로 한글로 말해줘");
+
+    results = {
+      'description': await description,
+      'cause': await cause,
+      'solution': await solution,
+    };
+  } catch (e) {
+    print("Error fetching data: $e");
+  }
+
+  return results;
+}

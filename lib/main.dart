@@ -1,19 +1,17 @@
-// Dart 코드를 플러터를 이용하여 작성한 것으로 보입니다. 이 코드는 차량 정비 앱을 구성하는데 사용됩니다.
+// main.dart
+import 'dart:async';
+import 'dart:convert'; 
 
-// 필요한 라이브러리를 가져옵니다.
-import 'dart:async'; // 비동기 작업을 위한 라이브러리
-import 'dart:convert'; // JSON 데이터 처리를 위한 라이브러리
-
-import 'package:flutter/material.dart'; // 플러터 UI 프레임워크
-import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart'; // Bluetooth 관련 기능을 위한 라이브러리
-import 'allimPage.dart'; // 알람 페이지
-import 'diagnosisPage.dart'; // 진단 페이지
-import 'monitoringPage.dart'; // 모니터링 페이지
-import 'settingPage.dart'; // 세팅 페이지
-import 'obd2_plugin.dart'; // OBD2 플러그인
+import 'package:flutter/material.dart'; 
+import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart'; 
+import 'allimPage.dart'; 
+import 'diagnosisPage.dart';
+import 'monitoringPage.dart'; 
+import 'settingPage.dart'; 
+import 'obd2_plugin.dart'; 
 import 'obdData.dart';
 
-/// 블루투스 연결 여부 전역 변수
+/// 블루투스 연결 여부
 bool isConnected = false;
 /// OBD2 플러그인
 Obd2Plugin obd2 = Obd2Plugin();
@@ -83,7 +81,6 @@ class MainPageState extends State<MainPage> {
         });
 
         // 연결 종료 다이얼로그 표시
-        // ignore: use_build_context_synchronously
         showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -105,9 +102,6 @@ class MainPageState extends State<MainPage> {
         // 블루투스 활성화가 되었다면 장치 연결 여부 확인
         if (!(await obd2.hasConnection)) {
           await showBluetoothList(context, obd2); // 장치 선택 리스트 출력
-          setState(() {
-            isConnected = true;
-          });
         }
 
       }
@@ -133,7 +127,6 @@ class MainPageState extends State<MainPage> {
   Future<void> showBluetoothList(BuildContext context, Obd2Plugin obd2plugin) async {
     List<BluetoothDevice> devices = await obd2plugin.getPairedDevices; // 장치 목록
 
-    // ignore: use_build_context_synchronously
     showModalBottomSheet(
       context: context,
       builder: (builder) {
@@ -230,6 +223,10 @@ class MainPageState extends State<MainPage> {
               setButtonRow(context, firstButton: '차량진단', secondButton: '모니터링'),
               const SizedBox(height: 20),
               setButtonRow(context, firstButton: '알람', secondButton: '세팅'),
+              const SizedBox(height: 20),
+              setButtonRow(context,
+                  firstButton: '차량진단 오류',
+                  secondButton: 'TBD'), // 버튼 추가 (차량진단 오류, TBD)
             ],
           ),
         ),
@@ -265,6 +262,7 @@ Future<void> getDataFromObd(Obd2Plugin obd2) async {
                 break;
             }
           }
+          print(engineRpm);
         }
       });
     }
@@ -385,6 +383,24 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const AllimPage()),
+                );
+              }else if (firstButton.compareTo('차량진단 오류') == 0) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      // 진단 페이지 라우팅 with SampleDiagositcCodeData 객체
+                      builder: (context) => DiagnosisPage(
+                            diagnosticCodes: [
+                              SampleDiagnosticCodeData(
+                                  code: "P0001",
+                                  desctiption: "연료량 조절 시스템",
+                                  devices: "연료"),
+                              SampleDiagnosticCodeData(
+                                  code: "P0200",
+                                  desctiption: "인젝터 - 회로 오작동",
+                                  devices: "인젝터")
+                            ],
+                          )),
                 );
               }
             },

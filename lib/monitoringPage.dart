@@ -1,24 +1,20 @@
-// Flutter에서 모니터링 페이지를 구성하는 코드입니다.
-
+// monitoringPage.dart
 import 'package:flutter/material.dart';
 import 'obdData.dart';
 
-// tatefulWidget를 사용하여 모니터링 페이지를 구현합니다.
 class MonitoringPage extends StatefulWidget {
   const MonitoringPage({Key? key}) : super(key: key);
 
-  // 부모 위젯의 MonitoringPageState 인스턴스를 찾아서 반환합니다.
+  // 부모 위젯의 MonitoringPageState 인스턴스를 찾아서 반환
   static MonitoringPageState of(BuildContext context) => context.findAncestorStateOfType<MonitoringPageState>()!;
   
   @override
   MonitoringPageState createState() => MonitoringPageState();
 }
 
-// 모니터링 페이지의 상태를 관리하는 State 클래스입니다.
 class MonitoringPageState extends State<MonitoringPage> {
 
   String searchKeyword = "";
-  
   
   @override
   void initState() {
@@ -94,7 +90,7 @@ class MonitoringPageState extends State<MonitoringPage> {
   }
 }
 
-// 모니터링 카드 위젯
+/// 모니터링 카드 위젯
 class MonitoringCard extends StatelessWidget {
   final String title;
   final VoidCallback? onPressed;
@@ -120,7 +116,7 @@ class MonitoringCard extends StatelessWidget {
   }
 }
 
-// 모니터링 카드 데이터 클래스
+/// 모니터링 카드 데이터 클래스
 class MonitoringCardData {
   final String title;
   final String dialogTitle;

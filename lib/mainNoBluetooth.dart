@@ -1,27 +1,24 @@
-// main.dart
-import 'dart:async'; // 비동기 작업
-// JSON 데이터 처리
+// mainNoBluetooth.dart
+import 'dart:async';
 import 'dart:math'; 
 
-import 'package:flutter/material.dart'; // 플러터 UI 프레임워크
-import 'package:my_flutter_app/allimPage.dart'; // 알람 페이지
-import 'package:my_flutter_app/diagnosisPage.dart'; // 진단 페이지
-import 'package:my_flutter_app/monitoringPage.dart'; // 모니터링 페이지
-import 'package:my_flutter_app/settingPage.dart'; // 세팅 페이지
-import 'package:my_flutter_app/obdData.dart';
+import 'package:flutter/material.dart'; 
+import 'allimPage.dart'; 
+import 'diagnosisPage.dart'; 
+import 'monitoringPage.dart';
+import 'settingPage.dart'; 
+import 'obdData.dart';
 
 Random random = Random();
 
 // 앱의 진입점
 void main() {
-  // MyApp 위젯을 실행
+
   runApp(const MyApp());
 
-  // 1분마다 데이터를 가져오기 위한 타이머 설정
-  Timer.periodic(const Duration(seconds: 5), (timer) async {
-    // 연결된 상태라면 OBD2 장치로부터 데이터 가져오기
-    // if (isConnected) await getDataFromObd(obd2);
-
+  // 30초마다 데이터를 랜덤하게 변경
+  Timer.periodic(const Duration(seconds: 30), (timer) async {
+    
     engineRpm = random.nextDouble() * 100;
     batteryVoltage = random.nextDouble() * 100;
     engineTemp = random.nextDouble() * 100;
@@ -114,6 +111,10 @@ class MainPageState extends State<MainPage> {
               setButtonRow(context, firstButton: '차량진단', secondButton: '모니터링'),
               const SizedBox(height: 20),
               setButtonRow(context, firstButton: '알람', secondButton: '세팅'),
+              const SizedBox(height: 20),
+              setButtonRow(context,
+                  firstButton: '차량진단 오류',
+                  secondButton: 'TBD'), // 버튼 추가 (차량진단 오류, TBD)
             ],
           ),
         ),
@@ -179,6 +180,24 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const AllimPage()),
+                );
+              }else if (firstButton.compareTo('차량진단 오류') == 0) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      // 진단 페이지 라우팅 with SampleDiagositcCodeData 객체
+                      builder: (context) => DiagnosisPage(
+                            diagnosticCodes: [
+                              SampleDiagnosticCodeData(
+                                  code: "P0001",
+                                  desctiption: "연료량 조절 시스템",
+                                  devices: "연료"),
+                              SampleDiagnosticCodeData(
+                                  code: "P0200",
+                                  desctiption: "인젝터 - 회로 오작동",
+                                  devices: "인젝터")
+                            ],
+                          )),
                 );
               }
             },
