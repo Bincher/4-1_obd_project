@@ -243,8 +243,8 @@ Future<void> getDataFromObd(Obd2Plugin obd2) async {
   if (await obd2.hasConnection) {
     if (!(await obd2.isListenToDataInitialed)) {
       obd2.setOnDataReceived((command, response, requestCode) {
-        print("$command => $response");
         if (response.startsWith('[{')) {
+          print("$command => $response");
           var jsonResponse = jsonDecode(response);
           for (var data in jsonResponse) {
             switch (data['PID']) {
@@ -262,12 +262,11 @@ Future<void> getDataFromObd(Obd2Plugin obd2) async {
                 break;
             }
           }
-          print(engineRpm);
         }
       });
     }
     await Future.delayed(Duration(milliseconds: await obd2.configObdWithJSON(commandJson)), (){});
-    await Future.delayed(Duration(milliseconds: await obd2.getParamsFromJSON(paramJson)), (){});
+    await Future.delayed(Duration(milliseconds: await obd2.getParamsFromJSON(paramJson)), (){print("getDataSuccess");});
   }
 }
 
@@ -304,7 +303,31 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
         },
       );
     } else {
-      if (engineRpm == 0 && batteryVoltage == 0) await getDataFromObd(obd2);
+      if (engineRpm == 0 && batteryVoltage == 0){
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("모니터링 중"),
+              content: FutureBuilder(
+                future: getDataFromObd(obd2),
+                builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  } else if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  } else {
+                    return const SizedBox.shrink();
+                  }
+                },
+              ),
+            );
+          },
+        );
+      }
+      await getDataFromObd(obd2);
+      Navigator.pop(context);
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const MonitoringPage()),
