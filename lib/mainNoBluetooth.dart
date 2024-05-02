@@ -17,7 +17,7 @@ void main() {
   runApp(const MyApp());
 
   // 30초마다 데이터를 랜덤하게 변경
-  Timer.periodic(const Duration(seconds: 30), (timer) async {
+  Timer.periodic(const Duration(seconds: 5), (timer) async {
     
     engineRpm = random.nextDouble() * 100;
     batteryVoltage = random.nextDouble() * 100;

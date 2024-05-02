@@ -21,7 +21,7 @@ void main() {
   runApp(const MyApp());
 
   // 1분마다 getDataFromObd 실행, 시간 조절 가능(second 가능)
-  Timer.periodic(const Duration(minutes: 1), (timer) async {
+  Timer.periodic(const Duration(seconds: 5), (timer) async {
     if (isConnected) await getDataFromObd(obd2);
   });
 }
@@ -303,31 +303,7 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
         },
       );
     } else {
-      if (engineRpm == 0 && batteryVoltage == 0){
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text("모니터링 중"),
-              content: FutureBuilder(
-                future: getDataFromObd(obd2),
-                builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
-                  } else if (snapshot.hasError) {
-                    return Text('Error: ${snapshot.error}');
-                  } else {
-                    return const SizedBox.shrink();
-                  }
-                },
-              ),
-            );
-          },
-        );
-      }
-      await getDataFromObd(obd2);
-      Navigator.pop(context);
+
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const MonitoringPage()),
