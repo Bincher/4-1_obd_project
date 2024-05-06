@@ -1,4 +1,6 @@
 // monitoringPage.dart
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'obdData.dart';
 
@@ -15,10 +17,20 @@ class MonitoringPage extends StatefulWidget {
 class MonitoringPageState extends State<MonitoringPage> {
 
   String searchKeyword = "";
+  late Timer _timer;
   
   @override
   void initState() {
     super.initState();
+    _timer = Timer.periodic(Duration(seconds: 2), (timer) {
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel(); 
+    super.dispose();
   }
 
   @override

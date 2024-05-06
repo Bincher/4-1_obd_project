@@ -1,5 +1,8 @@
 // obdData.dart
 
+import 'package:flutter/material.dart';
+//import 'package:provider/provider.dart';
+
 // 엔진 RPM 상태 변수
 double engineRpm = 0;
 // 배터리 전압 상태 변수
@@ -10,6 +13,22 @@ double vehicleSpeed = 0;
 double engineTemp = 0;
 // DTC 변수(예제)
 List<String> DTC = ['P0001', 'P0200']; // X
+
+class CounterModel with ChangeNotifier {
+  int _count = 0;
+
+  int get count => _count;
+
+  void increase() {
+    _count++;
+    notifyListeners();
+  }
+
+  void decrease() {
+    _count--;
+    notifyListeners();
+  }
+}
 
 class SampleDiagnosticCodeData {
   final String code;

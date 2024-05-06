@@ -20,10 +20,7 @@ Obd2Plugin obd2 = Obd2Plugin();
 void main() {
   runApp(const MyApp());
 
-  // 1분마다 getDataFromObd 실행, 시간 조절 가능(second 가능)
-  Timer.periodic(const Duration(seconds: 5), (timer) async {
-    if (isConnected) await getDataFromObd(obd2);
-  });
+  
 }
 
 /// 앱의 루트 위젯
@@ -147,6 +144,13 @@ class MainPageState extends State<MainPage> {
                         isConnected = true;
                       });
                       print("connected to bluetooth device.");
+
+                      getDataFromObd(obd2);
+                      // 1분마다 getDataFromObd 실행, 시간 조절 가능(second 가능)
+                      Timer.periodic(const Duration(seconds: 5), (timer) async {
+                        if (isConnected) await getDataFromObd(obd2);
+                      });
+
                       Navigator.pop(builder);
                     }, (message) {
                       setState(() {
@@ -430,7 +434,7 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
               } else if (secondButton.compareTo('세팅') == 0) {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const SettingPage()),
+                  MaterialPageRoute(builder: (context) => SettingPage()),
                 );
               }
             },
@@ -440,3 +444,4 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
     ],
   );
 }
+

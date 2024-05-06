@@ -228,7 +228,7 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
               } else if (secondButton.compareTo('세팅') == 0) {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const SettingPage()),
+                  MaterialPageRoute(builder: (context) => SettingPage()),
                 );
               }
             },
