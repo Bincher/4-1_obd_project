@@ -1,34 +1,56 @@
 // obdData.dart
 
-import 'package:flutter/material.dart';
-//import 'package:provider/provider.dart';
+import 'dart:async';
 
-// 엔진 RPM 상태 변수
-double engineRpm = 0;
-// 배터리 전압 상태 변수
-double batteryVoltage = 0;
-// 속력 상태 변수
-double vehicleSpeed = 0;
-// 엔진 온도 상태 변수
-double engineTemp = 0;
-// DTC 변수(예제)
-List<String> DTC = ['P0001', 'P0200']; // X
+class ObdData {
+  // 엔진 RPM 상태 변수 및 스트림
+  static double engineRpm = 0;
+  // 스트림 컨트롤러로 데이터를 구독할 수 있도록 broadcast 방식으로 생성
+  static StreamController<double> _engineRpmController = StreamController<double>.broadcast();
+  // 외부에서 구독할 수 있는 스트림을 제공
+  static Stream<double> get engineRpmStream => _engineRpmController.stream;
 
-class CounterModel with ChangeNotifier {
-  int _count = 0;
+  // 배터리 전압 상태 변수 및 스트림
+  static double batteryVoltage = 0;
+  static StreamController<double> _batteryVoltageController = StreamController<double>.broadcast();
+  static Stream<double> get batteryVoltageStream => _batteryVoltageController.stream;
 
-  int get count => _count;
+  // 속력 상태 변수 및 스트림
+  static double vehicleSpeed = 0;
+  static StreamController<double> _vehicleSpeedController = StreamController<double>.broadcast();
+  static Stream<double> get vehicleSpeedStream => _vehicleSpeedController.stream;
 
-  void increase() {
-    _count++;
-    notifyListeners();
+  // 엔진 온도 상태 변수 및 스트림
+  static double engineTemp = 0;
+  static StreamController<double> _engineTempController = StreamController<double>.broadcast();
+  static Stream<double> get engineTempStream => _engineTempController.stream;
+
+  // 데이터 업데이트 메소드: 새로운 값이 들어올 때 스트림 컨트롤러에 추가하여 구독자들에게 알림
+  static void updateEngineRpm(double newRpm) {
+    engineRpm = newRpm;
+    // 스트림에 업데이트된 값 추가
+    _engineRpmController.add(engineRpm);
   }
 
-  void decrease() {
-    _count--;
-    notifyListeners();
+  static void updateBatteryVoltage(double newVoltage) {
+    batteryVoltage = newVoltage;
+    _batteryVoltageController.add(batteryVoltage);
+  }
+
+  static void updateVehicleSpeed(double newSpeed) {
+    vehicleSpeed = newSpeed;
+    _vehicleSpeedController.add(vehicleSpeed);
+  }
+
+  static void updateEngineTemp(double newTemp) {
+    engineTemp = newTemp;
+    _engineTempController.add(engineTemp);
   }
 }
+
+
+// DTC 변수(예제)
+List<String> DTC = ['P0001', 'P0200']; // X
 
 class SampleDiagnosticCodeData {
   final String code;
@@ -43,7 +65,7 @@ class SampleDiagnosticCodeData {
 
   @override
   String toString() {
-    return code;
+    return '$code: $desctiption';
   }
 }
 

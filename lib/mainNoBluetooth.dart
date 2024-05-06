@@ -16,15 +16,6 @@ void main() {
 
   runApp(const MyApp());
 
-  // 30초마다 데이터를 랜덤하게 변경
-  Timer.periodic(const Duration(seconds: 5), (timer) async {
-    
-    engineRpm = random.nextDouble() * 100;
-    batteryVoltage = random.nextDouble() * 100;
-    engineTemp = random.nextDouble() * 100;
-    vehicleSpeed = random.nextDouble() * 100;
-    print("change Data");
-  });
 }
 
 // 앱의 루트 위젯
@@ -131,12 +122,7 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
 
   Future<void> monitoringVehicle() async {
 
-    if (engineRpm == 0 && batteryVoltage == 0){
-      engineRpm = random.nextDouble() * 100;
-      batteryVoltage = random.nextDouble() * 100;
-      engineTemp = random.nextDouble() * 100;
-      vehicleSpeed = random.nextDouble() * 100;
-    }
+
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const MonitoringPage()),
