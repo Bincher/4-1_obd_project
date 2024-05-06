@@ -1,21 +1,20 @@
+// 희홍: 2024-05-06 19:30 업데이트
 // mainNoBluetooth.dart
 import 'dart:async';
-import 'dart:math'; 
+import 'dart:math';
 
-import 'package:flutter/material.dart'; 
-import 'allimPage.dart'; 
-import 'diagnosisPage.dart'; 
+import 'package:flutter/material.dart';
+import 'allimPage.dart';
+import 'diagnosisPage.dart';
 import 'monitoringPage.dart';
-import 'settingPage.dart'; 
+import 'settingPage.dart';
 import 'obdData.dart';
 
 Random random = Random();
 
 // 앱의 진입점
 void main() {
-
   runApp(const MyApp());
-
 }
 
 // 앱의 루트 위젯
@@ -40,7 +39,8 @@ class MainPage extends StatefulWidget {
   const MainPage({Key? key}) : super(key: key);
 
   // State 객체를 가져오는 정적 메서드
-  static MainPageState of(BuildContext context) => context.findAncestorStateOfType<MainPageState>()!;
+  static MainPageState of(BuildContext context) =>
+      context.findAncestorStateOfType<MainPageState>()!;
 
   @override
   MainPageState createState() => MainPageState();
@@ -56,11 +56,8 @@ class MainPageState extends State<MainPage> {
     super.initState();
   }
 
-
-
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -114,30 +111,26 @@ class MainPageState extends State<MainPage> {
   }
 }
 
-
-
-/// 버튼 행 위젯 설정 함수
-Widget setButtonRow(BuildContext context, {required String firstButton, required String secondButton}) {
+// / 버튼 행 위젯 설정 함수
+Widget setButtonRow(BuildContext context,
+    {required String firstButton, required String secondButton}) {
   double buttonSize = MediaQuery.of(context).size.width / 2 - 20;
 
   Future<void> monitoringVehicle() async {
-
-
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const MonitoringPage()),
     );
   }
 
-  // 차량 진단 
+  // 차량 진단
   Future<void> diagnoseVehicle() async {
-
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const DiagnosisPage()),
     );
-
   }
+
   return Row(
     mainAxisAlignment: MainAxisAlignment.center,
     children: <Widget>[
@@ -167,7 +160,7 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
                   context,
                   MaterialPageRoute(builder: (context) => const AllimPage()),
                 );
-              }else if (firstButton.compareTo('차량진단 오류') == 0) {
+              } else if (firstButton.compareTo('차량진단 오류') == 0) {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -214,7 +207,7 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
               } else if (secondButton.compareTo('세팅') == 0) {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => SettingPage()),
+                  MaterialPageRoute(builder: (context) => const SettingPage()),
                 );
               }
             },
