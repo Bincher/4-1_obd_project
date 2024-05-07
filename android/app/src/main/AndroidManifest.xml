@@ -19,9 +19,20 @@
 
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+<!--local notification 권한 설정-->
+<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+<uses-permission android:name="android.permission.VIBRATE" />
+<uses-permission android:name="android.permission.WAKE_LOCK" />
+<uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+<!--local notification 권한 설정-->
+
+<uses-permission
+	android:name="android.permission.POST_NOTIFICATIONS"
+	android:minSdkVersion="33" />
     
     <application
-        android:label="my_flutter_app"
+        android:label="OBD 차량 스캐너"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

@@ -1,4 +1,3 @@
-// 희홍: 2024-05-06 19:30 업데이트
 // mainNoBluetooth.dart
 import 'dart:async';
 import 'dart:math';
@@ -14,6 +13,8 @@ Random random = Random();
 
 // 앱의 진입점
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  
   runApp(const MyApp());
 }
 

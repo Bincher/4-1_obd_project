@@ -50,7 +50,7 @@ class ObdData {
 
 
 // DTC 변수(예제)
-List<String> DTC = ['P0001', 'P0200']; // X
+List<String> DTC = []; // X
 
 class SampleDiagnosticCodeData {
   final String code;

@@ -2,23 +2,57 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'allimPage.dart';
 import 'diagnosisPage.dart';
 import 'monitoringPage.dart';
 import 'settingPage.dart';
 import 'obd2_plugin.dart';
 import 'obdData.dart';
-import 'package:my_flutter_app/utils/csv_helper.dart'; // csv 데이터 관리
+import 'utils/csv_helper.dart'; // csv 데이터 관리
 
 bool isConnected = false;
 Obd2Plugin obd2 = Obd2Plugin();
+FlutterLocalNotificationsPlugin _local = FlutterLocalNotificationsPlugin();
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
+  
+  Timer.periodic(const Duration(seconds: 5), (timer) async {
+    if (isConnected) {
+      await getDataFromObd(obd2);
+    }
+  });
 
   Timer.periodic(const Duration(seconds: 5), (timer) async {
-    if (isConnected) await getDataFromObd(obd2);
+    if(isConnected && diagnosisNotification){
+      NotificationDetails details = const NotificationDetails(
+        iOS: DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
+        android: AndroidNotificationDetails(
+          "show_test",
+          "show_test",
+          importance: Importance.max,
+          priority: Priority.high,
+        ),
+      );
+      String content = await getMessage();
+      if(!quietDiagnosis || content != "현재 발견된 문제가 없습니다."){
+        await _local.show(
+          0,
+          "title",
+          content,
+          details,
+          payload: "tyger://",
+        );
+      }
+      print("push Content");
+    }
   });
 }
 
@@ -42,7 +76,7 @@ class MainPage extends StatefulWidget {
   const MainPage({Key? key}) : super(key: key);
 
   static MainPageState of(BuildContext context) => context.findAncestorStateOfType<MainPageState>()!;
-
+  
   @override
   MainPageState createState() => MainPageState();
 }
@@ -54,11 +88,15 @@ class MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
+    _permissionWithNotification();
+    _initLocalNotification();
   }
 
   Future<void> setBluetoothDevice(Obd2Plugin obd2plugin) async {
     try {
+
       if (isConnected) {
+        
         await obd2plugin.disconnect();
         setState(() {
           isConnected = false;
@@ -78,6 +116,7 @@ class MainPageState extends State<MainPage> {
           },
         );
       } else {
+        
         if (!(await obd2.isBluetoothEnable)) {
           await obd2.enableBluetooth;
         }
@@ -429,4 +468,47 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
       ),
     ],
   );
+}
+
+void _permissionWithNotification() async {
+    if (await Permission.notification.isDenied &&
+        !await Permission.notification.isPermanentlyDenied) {
+      await [Permission.notification].request();
+    }
+  }
+
+Future<void> _initLocalNotification() async {
+  AndroidInitializationSettings android =
+        const AndroidInitializationSettings("@mipmap/ic_launcher");
+    DarwinInitializationSettings ios = const DarwinInitializationSettings(
+      requestSoundPermission: false,
+      requestBadgePermission: false,
+      requestAlertPermission: false,
+    );
+    InitializationSettings settings =
+        InitializationSettings(android: android, iOS: ios);
+    await _local.initialize(settings);
+}
+
+NotificationDetails details = const NotificationDetails(
+	iOS: DarwinNotificationDetails(
+		presentAlert: true,
+		presentBadge: true,
+		presentSound: true,
+	),
+	android: AndroidNotificationDetails(
+    	"1",
+        "test",
+		importance: Importance.max,
+		priority: Priority.high,
+	),
+);
+
+Future<String> getMessage() async {
+  await getDtcFromObd(obd2);
+  if(DTC.isEmpty) {
+    return "현재 발견된 문제가 없습니다.";
+  } else {
+    return "문제가 발생했습니다\n차량진단 버튼을 클릭해주세요";
+  }
 }

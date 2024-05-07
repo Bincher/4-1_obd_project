@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "C:/dev/my_flutter_app/build/windows/x64/_deps/nuget-subbuild"
+    "cmake.sourceDirectory": "C:/dev/my_flutter_app/build/windows/x64/_deps/nuget-subbuild",
+    "java.configuration.updateBuildConfiguration": "interactive"
 }
