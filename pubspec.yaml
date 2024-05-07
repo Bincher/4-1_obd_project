@@ -50,6 +50,7 @@ dependencies:
   graphic: ^2.2.1
   intl: ^0.19.0
   flutter_local_notifications: ^17.1.2
+  flutter_tts: ^4.0.2
 
 
 dev_dependencies:

@@ -11,10 +11,12 @@ import 'settingPage.dart';
 import 'obd2_plugin.dart';
 import 'obdData.dart';
 import 'utils/csv_helper.dart'; // csv 데이터 관리
+import 'package:flutter_tts/flutter_tts.dart';
 
 bool isConnected = false;
 Obd2Plugin obd2 = Obd2Plugin();
 FlutterLocalNotificationsPlugin _local = FlutterLocalNotificationsPlugin();
+FlutterTts tts = FlutterTts();
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,12 +47,13 @@ void main() {
       if(!quietDiagnosis || content != "현재 발견된 문제가 없습니다."){
         await _local.show(
           0,
-          "title",
+          "OBD 차량스캐너",
           content,
           details,
           payload: "tyger://",
         );
       }
+      tts.speak(content);
       print("push Content");
     }
   });
@@ -84,12 +87,15 @@ class MainPage extends StatefulWidget {
 class MainPageState extends State<MainPage> {
   String bluetoothText = "OBD2 연결이 없습니다.";
   String bluetoothButtonText = "클릭하여 장치를 연결";
+  
 
   @override
   void initState() {
     super.initState();
     _permissionWithNotification();
     _initLocalNotification();
+    tts.setLanguage('kr');
+    tts.setSpeechRate(0.4);
   }
 
   Future<void> setBluetoothDevice(Obd2Plugin obd2plugin) async {
