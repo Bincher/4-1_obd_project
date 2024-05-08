@@ -28,7 +28,8 @@ void main() {
     }
   });
 
-  Timer.periodic(const Duration(seconds: 5), (timer) async {
+  // 시간 바꿀 예정
+  Timer.periodic(const Duration(seconds: 10), (timer) async {
     if(isConnected && diagnosisNotification){
       NotificationDetails details = const NotificationDetails(
         iOS: DarwinNotificationDetails(
@@ -95,7 +96,7 @@ class MainPageState extends State<MainPage> {
     _permissionWithNotification();
     _initLocalNotification();
     tts.setLanguage('kr');
-    tts.setSpeechRate(0.4);
+    tts.setSpeechRate(0.8);
   }
 
   Future<void> setBluetoothDevice(Obd2Plugin obd2plugin) async {
@@ -175,6 +176,7 @@ class MainPageState extends State<MainPage> {
                       });
                       print("connected to bluetooth device.");
                       Navigator.pop(builder);
+                      
                     }, (message) {
                       setState(() {
                         isConnected = false;
@@ -512,9 +514,16 @@ NotificationDetails details = const NotificationDetails(
 
 Future<String> getMessage() async {
   await getDtcFromObd(obd2);
+
+  String msg = "";
   if(DTC.isEmpty) {
-    return "현재 발견된 문제가 없습니다.";
+    msg += "진단코드 : 없음\n";
   } else {
-    return "문제가 발생했습니다\n차량진단 버튼을 클릭해주세요";
+    msg += "진단코드 : 있음(진단버튼 클릭 필요)\n";
   }
+  if(ObdData.engineTemp > 20){
+    // 테스트를 위해 20으로 설정, 이후 95로 변경 예정
+    msg += "엔진온도 : 95도 보다 높음, 확인 필요\n";
+  }
+  return msg;
 }

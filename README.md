@@ -8,6 +8,8 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
 
 - 실행하실때 chat-GPT api-key는 꼭 넣어주세요. 여기선 보안상 뺐습니다.
 
+- local notification에 대한 이슈가 있는데 이건 미팅때 설명드릴께요
+
 - 앱 이미지 : <a href="https://www.flaticon.com/kr/free-icons/" title="자발적인 아이콘">자발적인 아이콘 제작자: rukanicon - Flaticon</a>
 
     - 오픈소스 라이선스에 넣을 것
