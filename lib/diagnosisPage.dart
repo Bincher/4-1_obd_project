@@ -4,16 +4,13 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'obdData.dart';
 
-/// 진단 페이지 위젯
 class DiagnosisPage extends StatelessWidget {
+  const DiagnosisPage({Key? key, this.diagnosticCodes}) : super(key: key);
   /// 진단 코드 리스트
   final List<SampleDiagnosticCodeData>? diagnosticCodes;
-
-  const DiagnosisPage({Key? key, this.diagnosticCodes}) : super(key: key);
-
+  
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('차량진단'),
@@ -98,7 +95,7 @@ class DiagnosisPage extends StatelessWidget {
               style: const TextStyle(fontSize: 18.0),
             ),
             Text(
-              // 희홍: 문제가 있는 장치를 객체에 접근해서 추출
+              // 문제가 있는 장치를 객체에 접근해서 추출
               '문제가 있는 장치: ${diagnosticCodes!.map((code) => code.devices).join(', ')}',
               style: const TextStyle(fontSize: 18.0),
             ),
@@ -152,10 +149,10 @@ Widget chatGPTOpinionScreen(BuildContext context, SampleDiagnosticCodeData code)
       title: const Text('ChatGPT 의견'),
       actions: [
         IconButton( //새로고침 버튼 추가
-          icon: Icon(Icons.refresh),
+          icon: const Icon(Icons.refresh),
           onPressed: () {
             // 상태를 업데이트하는 로직을 추가
-            (context as Element).reassemble();
+            (context as Element).reassemble(); // reassemble 경고 발생
           },
         ),
       ],
@@ -182,9 +179,9 @@ Widget chatGPTOpinionScreen(BuildContext context, SampleDiagnosticCodeData code)
                 ),
                 Text(
                   '$code',
-                  style: TextStyle(fontSize: 20.0),
+                  style: const TextStyle(fontSize: 20.0),
                 ),
-                SizedBox(height: 20.0), // 공백을 위한 SizedBox
+                const SizedBox(height: 20.0), // 공백을 위한 SizedBox
                 _buildResponseCard('부가 설명', snapshot.data?['description'] ?? 'No data'),
                 _buildResponseCard('원인', snapshot.data?['cause'] ?? 'No data'),
                 _buildResponseCard('해결 방안', snapshot.data?['solution'] ?? 'No data'),
@@ -209,7 +206,7 @@ Widget _buildResponseCard(String title, String content) {
 
 /// GPT Request와 Response
 Future<Map<String, String>> fetchChatGPTResponse(String code) async {
-  const apiKey = 'API_KEY'; // 보안 문제로 제거, 따로 추가해주세요
+  const apiKey = 'API-KEY'; // 보안 문제로 제거, 따로 추가해주세요
   const apiUrl = 'https://api.openai.com/v1/chat/completions';
 
   Map<String, String> results = {

@@ -1,13 +1,13 @@
 // mainNoBluetooth.dart
 import 'dart:async';
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'allimPage.dart';
 import 'diagnosisPage.dart';
 import 'monitoringPage.dart';
 import 'settingPage.dart';
 import 'obdData.dart';
+import 'utils/csv_helper.dart';
 
 Random random = Random();
 
@@ -15,6 +15,14 @@ Random random = Random();
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   
+  Timer.periodic(const Duration(seconds: 5), (timer) async {
+
+    ObdData.updateBatteryVoltage(random.nextDouble() * 100);
+    ObdData.updateEngineRpm(random.nextDouble() * 100);
+    ObdData.updateVehicleSpeed(random.nextDouble() * 100);
+    ObdData.updateEngineTemp(random.nextDouble() * 100);
+  });
+
   runApp(const MyApp());
 }
 
@@ -55,6 +63,13 @@ class MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
+  }
+
+  /// 특정 CSV 데이터 파일 삭제
+  Future<void> deleteCsvData(List<String> fileNames) async {
+    for (String fileName in fileNames) {
+      await CsvHelper.deleteCsvFile(fileName);
+    }
   }
 
   @override

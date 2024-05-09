@@ -19,18 +19,22 @@ FlutterLocalNotificationsPlugin _local = FlutterLocalNotificationsPlugin();
 FlutterTts tts = FlutterTts();
 
 void main() {
+
+  // 앱의 바인딩이 초기화되었는지를 확인
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
   
+  // 5초마다 get Monitoring Data 
   Timer.periodic(const Duration(seconds: 5), (timer) async {
     if (isConnected) {
       await getDataFromObd(obd2);
     }
   });
 
-  // 시간 바꿀 예정
+  // 10분마다 local notification push, 시간 바꿀 것
   Timer.periodic(const Duration(seconds: 10), (timer) async {
     if(isConnected && diagnosisNotification){
+
       NotificationDetails details = const NotificationDetails(
         iOS: DarwinNotificationDetails(
           presentAlert: true,
@@ -44,6 +48,7 @@ void main() {
           priority: Priority.high,
         ),
       );
+      
       String content = await getMessage();
       if(!quietDiagnosis || content != "현재 발견된 문제가 없습니다."){
         await _local.show(
@@ -54,14 +59,15 @@ void main() {
           payload: "tyger://",
         );
       }
-      tts.speak(content);
-      print("push Content");
+      if(ttsVoiceEnabled){
+        tts.speak(content);
+      }
     }
   });
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key});
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -86,14 +92,14 @@ class MainPage extends StatefulWidget {
 }
 
 class MainPageState extends State<MainPage> {
+
   String bluetoothText = "OBD2 연결이 없습니다.";
   String bluetoothButtonText = "클릭하여 장치를 연결";
   
-
   @override
   void initState() {
     super.initState();
-    _permissionWithNotification();
+    _permissionWithNotification(); // 앱 시작시 권한 설정 -> 안드로이드 12 이상만
     _initLocalNotification();
     tts.setLanguage('kr');
     tts.setSpeechRate(0.8);
@@ -101,16 +107,13 @@ class MainPageState extends State<MainPage> {
 
   Future<void> setBluetoothDevice(Obd2Plugin obd2plugin) async {
     try {
-
       if (isConnected) {
-        
         await obd2plugin.disconnect();
         setState(() {
           isConnected = false;
           ObdData.batteryVoltage = 0;
           ObdData.engineRpm = 0;
         });
-        // 관련 CSV 데이터 삭제
         await deleteCsvData(['engine_temp', 'battery_voltage', 'engine_rpm', 'vehicle_speed']);
 
         showDialog(
@@ -123,11 +126,9 @@ class MainPageState extends State<MainPage> {
           },
         );
       } else {
-        
         if (!(await obd2.isBluetoothEnable)) {
           await obd2.enableBluetooth;
         }
-
         if (!(await obd2.hasConnection)) {
           await showBluetoothList(context, obd2);
         }
@@ -146,13 +147,14 @@ class MainPageState extends State<MainPage> {
     }
   }
 
-    // 특정 CSV 데이터 파일 삭제
+  /// 특정 CSV 데이터 파일 삭제
   Future<void> deleteCsvData(List<String> fileNames) async {
     for (String fileName in fileNames) {
       await CsvHelper.deleteCsvFile(fileName);
     }
   }
 
+  /// 블루투스 기기 목록 출력
   Future<void> showBluetoothList(BuildContext context, Obd2Plugin obd2plugin) async {
     List<BluetoothDevice> devices = await obd2plugin.getPairedDevices;
 
@@ -171,13 +173,14 @@ class MainPageState extends State<MainPage> {
                 child: TextButton(
                   onPressed: () {
                     obd2plugin.getConnection(devices[index], (connection) {
+                      // 연결 성공
                       setState(() {
                         isConnected = true;
                       });
                       print("connected to bluetooth device.");
                       Navigator.pop(builder);
-                      
                     }, (message) {
+                      // 연결 실패
                       setState(() {
                         isConnected = false;
                       });
@@ -248,9 +251,7 @@ class MainPageState extends State<MainPage> {
               const SizedBox(height: 20),
               setButtonRow(context, firstButton: '알람', secondButton: '세팅'),
               const SizedBox(height: 20),
-              setButtonRow(context,
-                firstButton: '차량진단 오류',
-                secondButton: 'TBD'),
+              setButtonRow(context, firstButton: '차량진단 오류', secondButton: 'TBD'),
             ],
           ),
         ),
@@ -266,7 +267,6 @@ Future<void> getDataFromObd(Obd2Plugin obd2) async {
   if (!(await obd2.isBluetoothEnable)) {
     await obd2.enableBluetooth;
   }
-
   // 연결된 경우 데이터 수신 시작
   if (await obd2.hasConnection) {
     // 데이터 수신이 초기화되지 않은 경우 수신 리스너 설정
@@ -478,6 +478,7 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
   );
 }
 
+/// Notification 권한 요청(안드로이드 12 이상)
 void _permissionWithNotification() async {
     if (await Permission.notification.isDenied &&
         !await Permission.notification.isPermanentlyDenied) {
@@ -498,20 +499,7 @@ Future<void> _initLocalNotification() async {
     await _local.initialize(settings);
 }
 
-NotificationDetails details = const NotificationDetails(
-	iOS: DarwinNotificationDetails(
-		presentAlert: true,
-		presentBadge: true,
-		presentSound: true,
-	),
-	android: AndroidNotificationDetails(
-    	"1",
-        "test",
-		importance: Importance.max,
-		priority: Priority.high,
-	),
-);
-
+/// local notification Message 설정
 Future<String> getMessage() async {
   await getDtcFromObd(obd2);
 
@@ -521,8 +509,7 @@ Future<String> getMessage() async {
   } else {
     msg += "진단코드 : 있음(진단버튼 클릭 필요)\n";
   }
-  if(ObdData.engineTemp > 20){
-    // 테스트를 위해 20으로 설정, 이후 95로 변경 예정
+  if(ObdData.engineTemp > 95){
     msg += "엔진온도 : 95도 보다 높음, 확인 필요\n";
   }
   return msg;

@@ -1,10 +1,9 @@
+// allimPage.dart
 import 'package:flutter/material.dart';
 import 'package:settings_ui/settings_ui.dart';
 
-// https://velog.io/@tygerhwang/Flutter-Local-Notifications-%EC%82%AC%EC%9A%A9%ED%95%B4-%EB%B3%B4%EA%B8%B0
 void main() {
   runApp(MyApp());
-  
 }
 
 bool diagnosisNotification = true;
@@ -12,6 +11,7 @@ bool ttsVoiceEnabled = true;
 bool quietDiagnosis = false;
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +34,7 @@ class AllimPage extends StatefulWidget {
 
 class AllimPageState extends State<AllimPage> {
   
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SettingsList(
