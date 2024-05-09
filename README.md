@@ -10,6 +10,10 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
 
 - 현재 test 코드 작성중...
 
+    - 5/9 기준 main.dart에 대한 기본적인 test code 작성
+
+    - 블루투스 여부 test code 작성 가능여부 확인중
+
 - 앱 이미지 : <a href="https://www.flaticon.com/kr/free-icons/" title="자발적인 아이콘">자발적인 아이콘 제작자: rukanicon - Flaticon</a>
 
     - 오픈소스 라이선스에 넣을 것

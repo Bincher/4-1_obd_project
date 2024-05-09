@@ -5,26 +5,70 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:my_flutter_app/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+  testWidgets('Check initial state', (WidgetTester tester) async {
+      await tester.pumpWidget(MyApp());
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
+      // Bluetooth 연결 상태 초기값 확인
+      expect(isConnected, false);
+
+      // 홈 화면이 정상적으로 렌더링되었는지 확인
+      expect(find.text('차량 정비 Application'), findsOneWidget);
+    });
+
+  testWidgets('Check diagnosis button click with Bluetooth connected', (WidgetTester tester) async {
+    // Bluetooth 연결 상태를 true로 설정합니다.
+    isConnected = true;
+
+    // 앱을 빌드합니다.
+    await tester.pumpWidget(MyApp());
+
+    // 진단코드 버튼을 탭합니다.
+    await tester.tap(find.text('차량진단'));
+
+    // 비동기 작업이 완료될 때까지 잠시 기다립니다.
     await tester.pump();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // 진단 페이지로 이동했는지 확인합니다.
+    expect(find.text('진단 중'), findsOneWidget);
+  });
+
+  testWidgets('Check diagnosis button click with Bluetooth disconnected', (WidgetTester tester) async {
+    // Bluetooth 연결 상태를 false로 설정합니다.
+    isConnected = false;
+
+    // 앱을 빌드합니다.
+    await tester.pumpWidget(MyApp());
+
+    // 진단코드 버튼을 탭합니다.
+    await tester.tap(find.text('차량진단'));
+
+    // 비동기 작업이 완료될 때까지 잠시 기다립니다.
+    await tester.pump();
+
+    // 경고 다이얼로그가 표시되었는지 확인합니다.
+    expect(find.text('블루투스 에러!'), findsOneWidget);
+  });
+
+
+  testWidgets('Check monitoring button click with Bluetooth disconnected', (WidgetTester tester) async {
+    // Bluetooth 연결 상태를 false로 설정합니다.
+    isConnected = false;
+
+    // 앱을 빌드합니다.
+    await tester.pumpWidget(MyApp());
+
+    // 모니터링 버튼을 탭합니다.
+    await tester.tap(find.text('모니터링'));
+
+    // 비동기 작업이 완료될 때까지 잠시 기다립니다.
+    await tester.pump();
+
+    // 경고 다이얼로그가 표시되었는지 확인합니다.
+    expect(find.text('블루투스 에러!'), findsOneWidget);
   });
 }
