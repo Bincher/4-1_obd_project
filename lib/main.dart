@@ -258,6 +258,8 @@ class MainPageState extends State<MainPage> {
       ),
     );
   }
+
+  static of(Element element) {}
 }
 
 
