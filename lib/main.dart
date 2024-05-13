@@ -108,7 +108,8 @@ class MainPageState extends State<MainPage> {
   Future<void> setBluetoothDevice(Obd2Plugin obd2plugin) async {
     try {
       if (isConnected) {
-        await obd2plugin.disconnect();
+        await obd2.disconnect();
+        print("unconnected success");
         setState(() {
           isConnected = false;
           ObdData.batteryVoltage = 0;
@@ -116,15 +117,7 @@ class MainPageState extends State<MainPage> {
         });
         await deleteCsvData(['engine_temp', 'battery_voltage', 'engine_rpm', 'vehicle_speed']);
 
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return const AlertDialog(
-              title: Text("연결 종료"),
-              content: Text("연결이 종료되었습니다."),
-            );
-          },
-        );
+
       } else {
         if (!(await obd2.isBluetoothEnable)) {
           await obd2.enableBluetooth;
@@ -157,7 +150,7 @@ class MainPageState extends State<MainPage> {
   /// 블루투스 기기 목록 출력
   Future<void> showBluetoothList(BuildContext context, Obd2Plugin obd2plugin) async {
     List<BluetoothDevice> devices = await obd2plugin.getPairedDevices;
-
+    
     showModalBottomSheet(
       context: context,
       builder: (builder) {
