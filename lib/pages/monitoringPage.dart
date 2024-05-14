@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'obdData.dart';
+import '../models/obdData.dart';
 import 'package:fl_chart/fl_chart.dart'; // fl_chart를 사용하여 차트 표시
-import 'utils/csv_helper.dart'; // csv 데이터 관리
+import '../utils/csv_helper.dart'; // csv 데이터 관리
 
 class MonitoringPage extends StatefulWidget {
   const MonitoringPage({Key? key}) : super(key: key);

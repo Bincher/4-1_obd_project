@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'allimPage.dart';
-import 'diagnosisPage.dart';
-import 'monitoringPage.dart';
-import 'settingPage.dart';
-import 'obd2_plugin.dart';
-import 'obdData.dart';
-import 'utils/csv_helper.dart'; // csv 데이터 관리
+import '../allimPage.dart';
+import '../diagnosisPage.dart';
+import '../monitoringPage.dart';
+import '../settingPage.dart';
+import '../../utils/obd2_plugin.dart';
+import '../../models/obdData.dart';
+import '../../utils/csv_helper.dart'; // csv 데이터 관리
 import 'package:flutter_tts/flutter_tts.dart';
 
 bool isConnected = false;
@@ -366,7 +366,7 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
           );
         },
       );
-      await getDtcFromObd(obd2);
+      //await getDtcFromObd(obd2);
       Navigator.pop(context);
       Navigator.push(
         context,

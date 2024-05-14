@@ -6,8 +6,8 @@
 // tree, read text, and verify that the values of widget properties are correct.
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_flutter_app/main.dart';
-import 'package:my_flutter_app/monitoringPage.dart';
+import 'package:my_flutter_app/pages/home/main.dart';
+import 'package:my_flutter_app/pages/monitoringPage.dart';
 
 void main() {
 
@@ -87,6 +87,7 @@ void main() {
       // 모니터링 페이지가 표시되는지 확인
       expect(find.byType(MonitoringPage), findsOneWidget);
     });
+
 
   });
 

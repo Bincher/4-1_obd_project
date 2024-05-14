@@ -2,12 +2,12 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'allimPage.dart';
-import 'diagnosisPage.dart';
-import 'monitoringPage.dart';
-import 'settingPage.dart';
-import 'obdData.dart';
-import 'utils/csv_helper.dart';
+import '../allimPage.dart';
+import '../diagnosisPage.dart';
+import '../monitoringPage.dart';
+import '../settingPage.dart';
+import '../../models/obdData.dart';
+import '../../utils/csv_helper.dart';
 
 Random random = Random();
 

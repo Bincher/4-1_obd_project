@@ -2,7 +2,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'obdData.dart';
+import '../models/obdData.dart';
 
 class DiagnosisPage extends StatelessWidget {
   const DiagnosisPage({Key? key, this.diagnosticCodes}) : super(key: key);
@@ -35,7 +35,7 @@ class DiagnosisPage extends StatelessWidget {
             diagnosticCodes == null || diagnosticCodes!.isEmpty
                 ? _buildNoDiagnosticCodesCardContent()
                 : Column(
-                    // 희홍: Column으로 고장 코드 카드 위젯 반환
+                    // Column으로 고장 코드 카드 위젯 반환
                     children: diagnosticCodes!.map((code) {
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
