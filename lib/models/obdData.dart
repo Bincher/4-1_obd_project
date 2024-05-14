@@ -20,10 +20,40 @@ class ObdData {
   static StreamController<double> _vehicleSpeedController = StreamController<double>.broadcast();
   static Stream<double> get vehicleSpeedStream => _vehicleSpeedController.stream;
 
-  // 엔진 온도 상태 변수 및 스트림
+  // 엔진 냉각수 온도 상태 변수 및 스트림
   static double engineTemp = 0;
   static StreamController<double> _engineTempController = StreamController<double>.broadcast();
   static Stream<double> get engineTempStream => _engineTempController.stream;
+
+  // 엔진 부화 상태 변수 및 스트림
+  static double engineLoad = 0;
+  static StreamController<double> _engineLoadController = StreamController<double>.broadcast();
+  static Stream<double> get engineLoadStream => _engineLoadController.stream;
+
+  // 흡입매니폴드 압력 변수 및 스트림
+  static double manifoldPressure = 0;
+  static StreamController<double> _manifoldPressureController = StreamController<double>.broadcast();
+  static Stream<double> get manifoldPressureStream => _manifoldPressureController.stream;
+
+  // 차량 내부 기온 변수 및 스트림
+  static double airTemperature = 0;
+  static StreamController<double> _airTemperatureController = StreamController<double>.broadcast();
+  static Stream<double> get  airTemperatureStream => _airTemperatureController.stream;
+
+  // 흡입 공기량 변수 및 스트림
+  static double maf = 0;
+  static StreamController<double> _mafController = StreamController<double>.broadcast();
+  static Stream<double> get  mafStream => _mafController.stream;
+
+  // 스트롤 포지션 변수 및 스트림
+  static double throttlePosition = 0;
+  static StreamController<double> _throttlePositionController = StreamController<double>.broadcast();
+  static Stream<double> get  throttlePositionStream => _throttlePositionController.stream;
+
+  // 촉매 온도 변수 및 스트림
+  static double catalystTemp = 0;
+  static StreamController<double> _catalystTempController = StreamController<double>.broadcast();
+  static Stream<double> get  catalystTempStream => _catalystTempController.stream;
 
   // 데이터 업데이트 메소드: 새로운 값이 들어올 때 스트림 컨트롤러에 추가하여 구독자들에게 알림
   static void updateEngineRpm(double newRpm) {
@@ -46,6 +76,37 @@ class ObdData {
     engineTemp = newTemp;
     _engineTempController.add(engineTemp);
   }
+
+  static void updateEngineLoad(double newLoad) {
+    engineLoad = newLoad;
+    _engineLoadController.add(engineLoad);
+  }
+
+  static void updateManifoldPressureTemp(double newPressure) {
+    manifoldPressure = newPressure;
+    _manifoldPressureController.add(manifoldPressure);
+  }
+
+  static void updateAirTemperature(double newAirTemp) {
+    airTemperature = newAirTemp;
+    _airTemperatureController.add(airTemperature);
+  }
+
+  static void updateMaf(double newMaf) {
+    maf = newMaf;
+    _mafController.add(maf);
+  }
+
+  static void updateThrottlePosition(double newThrottlePosition) {
+    throttlePosition = newThrottlePosition;
+    _throttlePositionController.add(throttlePosition);
+  }
+
+  static void updateCatalystTempPosition(double newCatalystTemp) {
+    catalystTemp = newCatalystTemp;
+    _catalystTempController.add(catalystTemp);
+  }
+
 }
 
 
@@ -112,13 +173,50 @@ String commandJson = '''[
 String paramJson = '''
     [
         {
+            "PID": "AT RV",
+            "length": 4,
+            "title": "Battery Voltage",
+            "unit": "V",
+            "description": "<int>",
+            "status": true
+        },
+        {
+            "PID": "01 04",
+            "length": 1,
+            "title": "engine load",
+            "unit": "°C",
+            "description": "<int>, 100 / 255 * [0]",
+            "status": true
+        },
+        {
+            "PID": "01 05",
+            "length": 1,
+            "title": "Engine coolant Temp",
+            "unit": "°C",
+            "description": "<int>, [0] - 40",
+            "status": true
+        },
+        {
+            "PID": "01 0B",
+            "length": 1,
+            "title": "Manifold absolute pressure",
+            "unit": "kPa",
+            "description": "<int>, [0]",
+            "status": true
+        },
+        {
             "PID": "01 0C",
             "length": 2,
             "title": "Engine RPM",
             "unit": "RPM",
             "description": "<double>, (( [0] * 256) + [1] ) / 4",
             "status": true
-        },
+        }
+      ]
+    ''';
+
+String paramJson2 = '''
+    [
         {
             "PID": "01 0D",
             "length": 1,
@@ -128,19 +226,35 @@ String paramJson = '''
             "status": true
         },
         {
-            "PID": "01 05",
+            "PID": "01 0F",
             "length": 1,
-            "title": "Engine Temp",
+            "title": "Intake air temperature",
             "unit": "°C",
             "description": "<int>, [0] - 40",
             "status": true
         },
         {
-            "PID": "AT RV",
-            "length": 4,
-            "title": "Battery Voltage",
-            "unit": "V",
-            "description": "<int>",
+            "PID": "01 10",
+            "length": 1,
+            "title": "Mass air flow sensor (MAF) air flow rate",
+            "unit": "g/s",
+            "description": "<int>, (256 * [0] + [1]) / 100",
+            "status": true
+        },
+        {
+            "PID": "01 11",
+            "length": 1,
+            "title": "Throttle position",
+            "unit": "%",
+            "description": "<int>, (256 * [0] + [1]) / 100",
+            "status": true
+        },
+        {
+            "PID": "01 3C",
+            "length": 1,
+            "title": "Catalyst Temperature",
+            "unit": "°C",
+            "description": "<int>, (256 * [0] + [1]) / 10 - 40",
             "status": true
         }
       ]

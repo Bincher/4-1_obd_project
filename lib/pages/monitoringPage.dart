@@ -47,11 +47,65 @@ class MonitoringPageState extends State<MonitoringPage> {
     fileName: 'vehicle_speed',
   );
 
+  final MonitoringCardData engineLoadCard = MonitoringCardData(
+    title: '엔진 과부화',
+    dialogTitle: '엔진 과부화',
+    dialogContent: '엔진 과부화 그래프',
+    unit: '%',
+    fileName: 'engine_load',
+  );
+
+  final MonitoringCardData manifoldPressureCard = MonitoringCardData(
+    title: '흡입매니폴드',
+    dialogTitle: '흡입매니폴드',
+    dialogContent: '흡입매니폴드 그래프',
+    unit: 'kPa',
+    fileName: 'manifold_pressure',
+  );
+
+  final MonitoringCardData airTemperatureCard = MonitoringCardData(
+    title: '차량 내부 온도',
+    dialogTitle: '차량 내부 온도',
+    dialogContent: '차량 내부 온도 그래프',
+    unit: '°C',
+    fileName: 'air_temperature',
+  );
+
+  final MonitoringCardData mafCard = MonitoringCardData(
+    title: '흡입 공기량',
+    dialogTitle: '흡입 공기량',
+    dialogContent: '흡입 공기량 그래프',
+    unit: 'g/s',
+    fileName: 'maf',
+  );
+
+  final MonitoringCardData throttlePositionCard = MonitoringCardData(
+    title: '스트롤 포지션',
+    dialogTitle: '스트롤 포지션',
+    dialogContent: '스트롤 포지션 그래프',
+    unit: '%',
+    fileName: 'throttle_position',
+  );
+
+  final MonitoringCardData catalystTempCard = MonitoringCardData(
+    title: '촉매 온도',
+    dialogTitle: '촉매 온도',
+    dialogContent: '촉매 온도 그래프',
+    unit: '°C',
+    fileName: 'catalyst_temp',
+  );
+
   // 데이터 구독을 통해 실시간 업데이트를 위해 스트림을 구독
   late StreamSubscription<double> _rpmSubscription;
   late StreamSubscription<double> _tempSubscription;
   late StreamSubscription<double> _voltageSubscription;
   late StreamSubscription<double> _speedSubscription;
+  late StreamSubscription<double> _loadSubscription;
+  late StreamSubscription<double> _pressureSubscription;
+  late StreamSubscription<double> _airTempSubscription;
+  late StreamSubscription<double> _mafSubscription;
+  late StreamSubscription<double> _throttlePositionSubscription;
+  late StreamSubscription<double> _catalystTempSubscription;
   Timer? _timer;
 
   @override
@@ -92,6 +146,55 @@ class MonitoringPageState extends State<MonitoringPage> {
       });
     });
 
+    _loadSubscription = ObdData.engineLoadStream.listen((load) {
+      setState(() {
+        engineLoadCard.addDataPoint(load);
+        engineLoadCard.saveDataToCsv(); // CSV에 저장
+      });
+    });
+
+    _pressureSubscription = ObdData.manifoldPressureStream.listen((pressure) {
+      setState(() {
+        manifoldPressureCard.addDataPoint(pressure);
+        manifoldPressureCard.saveDataToCsv(); // CSV에 저장
+      });
+    });
+
+    _airTempSubscription = ObdData.airTemperatureStream.listen((temp) {
+      setState(() {
+        airTemperatureCard.addDataPoint(temp);
+        airTemperatureCard.saveDataToCsv(); // CSV에 저장
+      });
+    });
+
+    _airTempSubscription = ObdData.airTemperatureStream.listen((temp) {
+      setState(() {
+        airTemperatureCard.addDataPoint(temp);
+        airTemperatureCard.saveDataToCsv(); // CSV에 저장
+      });
+    });
+
+    _mafSubscription = ObdData.mafStream.listen((maf) {
+      setState(() {
+        mafCard.addDataPoint(maf);
+        mafCard.saveDataToCsv(); // CSV에 저장
+      });
+    });
+
+    _throttlePositionSubscription = ObdData.throttlePositionStream.listen((position) {
+      setState(() {
+        throttlePositionCard.addDataPoint(position);
+        throttlePositionCard.saveDataToCsv(); // CSV에 저장
+      });
+    });
+
+    _catalystTempSubscription = ObdData.catalystTempStream.listen((temp) {
+      setState(() {
+        catalystTempCard.addDataPoint(temp);
+        catalystTempCard.saveDataToCsv(); // CSV에 저장
+      });
+    });
+
     // 5초마다 차트 업데이트
     _timer = Timer.periodic(const Duration(seconds: 5), (Timer timer) {
       setState(() {});
@@ -104,6 +207,12 @@ class MonitoringPageState extends State<MonitoringPage> {
     await batteryVoltageCard.loadDataFromCsv();
     await engineRpmCard.loadDataFromCsv();
     await vehicleSpeedCard.loadDataFromCsv();
+    await engineLoadCard.loadDataFromCsv();
+    await manifoldPressureCard.loadDataFromCsv();
+    await airTemperatureCard.loadDataFromCsv();
+    await mafCard.loadDataFromCsv();
+    await throttlePositionCard.loadDataFromCsv();
+    await catalystTempCard.loadDataFromCsv();
   }
 
   @override
@@ -113,6 +222,12 @@ class MonitoringPageState extends State<MonitoringPage> {
     _tempSubscription.cancel();
     _voltageSubscription.cancel();
     _speedSubscription.cancel();
+    _loadSubscription.cancel();
+    _pressureSubscription.cancel();
+    _airTempSubscription.cancel();
+    _mafSubscription.cancel();
+    _throttlePositionSubscription.cancel();
+    _catalystTempSubscription.cancel();
     _timer?.cancel();
     super.dispose();
   }
@@ -125,6 +240,12 @@ class MonitoringPageState extends State<MonitoringPage> {
       batteryVoltageCard,
       engineRpmCard,
       vehicleSpeedCard,
+      engineLoadCard,
+      manifoldPressureCard,
+      airTemperatureCard,
+      mafCard,
+      throttlePositionCard,
+      catalystTempCard
     ];
 
     List<MonitoringCardData> filteredCards = monitoringCards.where((card) {

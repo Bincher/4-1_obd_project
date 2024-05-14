@@ -32,7 +32,7 @@ void main() {
   });
 
   // 10분마다 local notification push, 시간 바꿀 것
-  Timer.periodic(const Duration(seconds: 10), (timer) async {
+  Timer.periodic(const Duration(minutes: 10), (timer) async {
     if(isConnected && diagnosisNotification){
 
       NotificationDetails details = const NotificationDetails(
@@ -268,8 +268,8 @@ Future<void> getDataFromObd(Obd2Plugin obd2) async {
     if (!(await obd2.isListenToDataInitialed)) {
       obd2.setOnDataReceived((command, response, requestCode) {
         // 응답이 JSON 배열 형태로 시작하는 경우 파싱
+        print("$command => $response");
         if (response.startsWith('[{')) {
-          print("$command => $response");
           var jsonResponse = jsonDecode(response);
           for (var data in jsonResponse) {
             switch (data['PID']) {
@@ -289,6 +289,30 @@ Future<void> getDataFromObd(Obd2Plugin obd2) async {
                 // 엔진 온도 업데이트
                 ObdData.updateEngineTemp(double.tryParse(data['response']) ?? 0);
                 break;
+              case '01 04':
+                // 엔진 과부화 업데이트
+                ObdData.updateEngineLoad(double.tryParse(data['response']) ?? 0);
+                break;
+              case '01 0B':
+                // 흡입매니폴드 압력 업데이트
+                ObdData.updateManifoldPressureTemp(double.tryParse(data['response']) ?? 0);
+                break;
+              case '01 0F':
+                // 차량 내부 기온 업데이트
+                ObdData.updateAirTemperature(double.tryParse(data['response']) ?? 0);
+                break;
+              case '01 10':
+                // 흡입 공기량 업데이트
+                ObdData.updateMaf(double.tryParse(data['response']) ?? 0);
+                break;
+              case '01 11':
+                // 스트롤 포지션 업데이트
+                ObdData.updateThrottlePosition(double.tryParse(data['response']) ?? 0);
+                break;
+              case '01 3C':
+                // 촉매 온도 업데이트
+                ObdData.updateCatalystTempPosition(double.tryParse(data['response']) ?? 0);
+                break;
             }
           }
         }
@@ -298,7 +322,8 @@ Future<void> getDataFromObd(Obd2Plugin obd2) async {
     // OBD 설정을 위한 JSON 데이터 전송
     await Future.delayed(Duration(milliseconds: await obd2.configObdWithJSON(commandJson)), (){});
     // 파라미터 데이터 요청
-    await Future.delayed(Duration(milliseconds: await obd2.getParamsFromJSON(paramJson)), (){print("getDataSuccess");});
+    await Future.delayed(Duration(milliseconds: await obd2.getParamsFromJSON(paramJson)), (){});
+    await Future.delayed(Duration(milliseconds: await obd2.getParamsFromJSON(paramJson2)), (){print("getDataSuccess");});
   }
 }
 
