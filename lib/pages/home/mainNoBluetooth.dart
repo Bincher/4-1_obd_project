@@ -1,4 +1,3 @@
-// mainNoBluetooth.dart
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
@@ -16,7 +15,6 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   
   Timer.periodic(const Duration(seconds: 5), (timer) async {
-
     ObdData.updateBatteryVoltage(random.nextDouble() * 100);
     ObdData.updateEngineRpm(random.nextDouble() * 100);
     ObdData.updateVehicleSpeed(random.nextDouble() * 100);
@@ -164,10 +162,6 @@ Widget setButtonRow(BuildContext context,
                 borderRadius: BorderRadius.circular(10.0),
               ),
             ),
-            child: Text(
-              firstButton,
-              style: const TextStyle(fontSize: 18.0),
-            ),
             onPressed: () {
               if (firstButton.compareTo('차량진단') == 0) {
                 diagnoseVehicle();
@@ -196,6 +190,20 @@ Widget setButtonRow(BuildContext context,
                 );
               }
             },
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/$firstButton.png',
+                  width: 48,
+                  height: 48,
+                ),
+                Text(
+                  firstButton,
+                  style: const TextStyle(fontSize: 18.0),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -213,10 +221,6 @@ Widget setButtonRow(BuildContext context,
                 borderRadius: BorderRadius.circular(10.0),
               ),
             ),
-            child: Text(
-              secondButton,
-              style: const TextStyle(fontSize: 18.0),
-            ),
             onPressed: () {
               if (secondButton.compareTo('모니터링') == 0) {
                 monitoringVehicle();
@@ -227,6 +231,20 @@ Widget setButtonRow(BuildContext context,
                 );
               }
             },
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/$secondButton.png',
+                  width: 48,
+                  height: 48,
+                ),
+                Text(
+                  secondButton,
+                  style: const TextStyle(fontSize: 18.0),
+                ),
+              ],
+            ),
           ),
         ),
       ),

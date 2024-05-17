@@ -427,9 +427,19 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
                 borderRadius: BorderRadius.circular(10.0),
               ),
             ),
-            child: Text(
-              firstButton,
-              style: const TextStyle(fontSize: 18.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/$firstButton.png',
+                  width: 48,
+                  height: 48,
+                ),
+                Text(
+                  firstButton,
+                  style: const TextStyle(fontSize: 18.0),
+                ),
+              ],
             ),
             onPressed: () {
               if (firstButton.compareTo('차량진단') == 0) {
@@ -477,9 +487,19 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
                 borderRadius: BorderRadius.circular(10.0),
               ),
             ),
-            child: Text(
-              secondButton,
-              style: const TextStyle(fontSize: 18.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/$secondButton.png',
+                  width: 48,
+                  height: 48,
+                ),
+                Text(
+                  secondButton,
+                  style: const TextStyle(fontSize: 18.0),
+                ),
+              ],
             ),
             onPressed: () {
               if (secondButton.compareTo('모니터링') == 0) {
