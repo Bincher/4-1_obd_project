@@ -233,12 +233,36 @@ class MainPageState extends State<MainPage> {
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                 ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      'assets/bluetooth.png',
+                      width: 48,
+                      height: 48,
+                    ),
+                    Text(
+                      bluetoothButtonText,
+                      style: const TextStyle(fontSize: 18.0),
+                    ),
+                  ],
+                ),
                 onPressed: () {
-                  setBluetoothDevice(obd2);
+                  print("Bluetooth 버튼 클릭이 실행되었습니다");
                 },
-                child: Text(bluetoothButtonText),
               ),
-              Text(bluetoothText),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Image.asset(
+                      isConnected ? 'assets/확인.png' : 'assets/경고.png',
+                      width: 20,
+                      height: 20,
+                    ),
+                  Text(" $bluetoothText"),
+                ]
+              ),
               const SizedBox(height: 20),
               setButtonRow(context, firstButton: '차량진단', secondButton: '모니터링'),
               const SizedBox(height: 20),

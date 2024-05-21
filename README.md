@@ -18,6 +18,26 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
 
     - 오픈소스 라이선스에 넣을 것
 
+- 아이콘 이미지
+    
+    - <a href="https://www.flaticon.com/kr/free-icons/" title="블루투스 아이콘">블루투스 아이콘 제작자: lakonicon - Flaticon</a>
+
+    - <a href="https://www.flaticon.com/kr/free-icons/-" title="자동차 진단 아이콘">자동차 진단 아이콘 제작자: kliwir art - Flaticon</a>
+
+    - <a href="https://www.flaticon.com/kr/free-icons/-" title="소프트웨어 개발 아이콘">소프트웨어 개발 아이콘 제작자: kliwir art - Flaticon</a>
+
+    - <a href="https://www.flaticon.com/kr/free-icons/" title="설정 아이콘">설정 아이콘 제작자: kliwir art - Flaticon</a>
+
+    - <a href="https://www.flaticon.com/kr/free-icons/" title="알림 아이콘">알림 아이콘 제작자: kliwir art - Flaticon</a>
+
+    - <a href="https://www.flaticon.com/kr/free-icons/ecg-" title="ecg 모니터 아이콘">Ecg 모니터 아이콘 제작자: kliwir art - Flaticon</a>
+
+    - <a href="https://www.flaticon.com/kr/free-icons/" title="경고 아이콘">경고 아이콘 제작자: Creatype - Flaticon</a>
+
+    <a href="https://www.flaticon.com/kr/free-icons/foursquare-" title="foursquare 체크인 아이콘">Foursquare 체크인 아이콘 제작자: hqrloveq - Flaticon</a>
+
+    - 오픈소스 라이선스에 넣을 것
+
 - 블루투스 없는 버전 : mainNoBluetooth.dart 실행
 
     - 다만, 일부 기능은 사용이 불가하며 일부 기능은 사소한 버그가 존재할 수 있음(블루투스 기능 등)

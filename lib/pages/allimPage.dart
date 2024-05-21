@@ -37,6 +37,9 @@ class AllimPageState extends State<AllimPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('알람'),
+      ),
       body: SettingsList(
         sections: [
           SettingsSection(

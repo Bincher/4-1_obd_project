@@ -31,7 +31,11 @@ class SettingPage extends StatefulWidget {
 
 class SettingPageState extends State<SettingPage> {
   Widget build(BuildContext context) {
+    
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('세팅'),
+      ),
       body: SettingsList(
         sections: [
           SettingsSection(
@@ -60,7 +64,9 @@ class SettingPageState extends State<SettingPage> {
               SettingsTile.navigation(
                 leading: Icon(Icons.help),
                 title: Text('도움말'),
-                onPressed: ((context) {}),
+                onPressed: ((context) {
+                  _launchURL('https://www.notion.so/bincher/App-622593d1186540c3a710d222e3180221');
+                }),
               ),
               SettingsTile.navigation(
                 leading: Icon(Icons.library_books),
