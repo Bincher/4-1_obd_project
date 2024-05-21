@@ -65,7 +65,7 @@ class SettingPageState extends State<SettingPage> {
                 leading: Icon(Icons.help),
                 title: Text('도움말'),
                 onPressed: ((context) {
-                  _launchURL('https://www.notion.so/bincher/App-622593d1186540c3a710d222e3180221');
+                  _launchURL('https://bincher.notion.site/App-622593d1186540c3a710d222e3180221?pvs=4');
                 }),
               ),
               SettingsTile.navigation(

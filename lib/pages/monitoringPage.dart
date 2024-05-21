@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'dart:async';
 import '../models/obdData.dart';
@@ -79,14 +80,6 @@ class MonitoringPageState extends State<MonitoringPage> {
     fileName: 'maf',
   );
 
-  final MonitoringCardData throttlePositionCard = MonitoringCardData(
-    title: '스트롤 포지션',
-    dialogTitle: '스트롤 포지션',
-    dialogContent: '스트롤 포지션 그래프',
-    unit: '%',
-    fileName: 'throttle_position',
-  );
-
   final MonitoringCardData catalystTempCard = MonitoringCardData(
     title: '촉매 온도',
     dialogTitle: '촉매 온도',
@@ -102,9 +95,7 @@ class MonitoringPageState extends State<MonitoringPage> {
   late StreamSubscription<double> _speedSubscription;
   late StreamSubscription<double> _loadSubscription;
   late StreamSubscription<double> _pressureSubscription;
-  late StreamSubscription<double> _airTempSubscription;
   late StreamSubscription<double> _mafSubscription;
-  late StreamSubscription<double> _throttlePositionSubscription;
   late StreamSubscription<double> _catalystTempSubscription;
   Timer? _timer;
 
@@ -160,20 +151,6 @@ class MonitoringPageState extends State<MonitoringPage> {
       });
     });
 
-    _airTempSubscription = ObdData.airTemperatureStream.listen((temp) {
-      setState(() {
-        airTemperatureCard.addDataPoint(temp);
-        airTemperatureCard.saveDataToCsv(); // CSV에 저장
-      });
-    });
-
-    _airTempSubscription = ObdData.airTemperatureStream.listen((temp) {
-      setState(() {
-        airTemperatureCard.addDataPoint(temp);
-        airTemperatureCard.saveDataToCsv(); // CSV에 저장
-      });
-    });
-
     _mafSubscription = ObdData.mafStream.listen((maf) {
       setState(() {
         mafCard.addDataPoint(maf);
@@ -181,12 +158,6 @@ class MonitoringPageState extends State<MonitoringPage> {
       });
     });
 
-    _throttlePositionSubscription = ObdData.throttlePositionStream.listen((position) {
-      setState(() {
-        throttlePositionCard.addDataPoint(position);
-        throttlePositionCard.saveDataToCsv(); // CSV에 저장
-      });
-    });
 
     _catalystTempSubscription = ObdData.catalystTempStream.listen((temp) {
       setState(() {
@@ -209,9 +180,7 @@ class MonitoringPageState extends State<MonitoringPage> {
     await vehicleSpeedCard.loadDataFromCsv();
     await engineLoadCard.loadDataFromCsv();
     await manifoldPressureCard.loadDataFromCsv();
-    await airTemperatureCard.loadDataFromCsv();
     await mafCard.loadDataFromCsv();
-    await throttlePositionCard.loadDataFromCsv();
     await catalystTempCard.loadDataFromCsv();
   }
 
@@ -224,9 +193,7 @@ class MonitoringPageState extends State<MonitoringPage> {
     _speedSubscription.cancel();
     _loadSubscription.cancel();
     _pressureSubscription.cancel();
-    _airTempSubscription.cancel();
     _mafSubscription.cancel();
-    _throttlePositionSubscription.cancel();
     _catalystTempSubscription.cancel();
     _timer?.cancel();
     super.dispose();
@@ -242,9 +209,7 @@ class MonitoringPageState extends State<MonitoringPage> {
       vehicleSpeedCard,
       engineLoadCard,
       manifoldPressureCard,
-      airTemperatureCard,
       mafCard,
-      throttlePositionCard,
       catalystTempCard
     ];
 
@@ -661,17 +626,125 @@ class MonitoringCard extends StatelessWidget {
     this.onPressed,
   }) : super(key: key);
 
+  showInformation(String title, context) {
+    String mainTitle = title.split('\n')[0];
+    switch(mainTitle){
+      case "엔진 냉각 온도":
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return const AlertDialog(
+              title: Text("엔진 냉각 온도"),
+              content: Text("""엔진 냉각 온도에 대해 간단히 설명하자면, 엔진이 작동하면서 발생하는 열을 조절하기 위해 필요한 온도입니다. 엔진이 작동할 때 연료가 연소하면서 많은 열이 발생하는데, 이 열을 효과적으로 관리하지 않으면 엔진이 과열되어 손상될 수 있습니다. 따라서 냉각 시스템이 필요합니다.\n자동차의 냉각 시스템은 보통 라디에이터, 물펌프, 서모스탯, 그리고 냉각액(엔진 오일 및 물의 혼합물)으로 구성됩니다. 이 시스템은 엔진의 온도를 적정 범위 내로 유지하여 엔진의 성능과 수명을 최대화합니다.\n엔진이 너무 뜨거워지면(105°C 이상) 과열로 인해 엔진 부품이 손상될 수 있으며, 너무 차가워지면(85°C 이하) 엔진이 효율적으로 작동하지 못하고 연료 소모가 증가할 수 있습니다. 따라서 적정 냉각 온도를 유지하는 것이 매우 중요합니다.\n\n적정 엔진 냉각 온도 : 일반적으로 85°C에서 105°C(185°F에서 221°F) 사이"""),
+            );
+          },
+        );
+      case "배터리 전압":
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return const AlertDialog(
+              title: Text("배터리 전압"),
+              content: Text("ㅇ"),
+            );
+          },
+        );
+      case "엔진 RPM":
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return const AlertDialog(
+              title: Text("엔진 RPM"),
+              content: Text("ㅇ"),
+            );
+          },
+        );
+      case "속력":
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return const AlertDialog(
+              title: Text("속력"),
+              content: Text("ㅇ"),
+            );
+          },
+        );
+      case "엔진 과부화":
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return const AlertDialog(
+              title: Text("엔진 과부화"),
+              content: Text("ㅇ"),
+            );
+          },
+        );
+      case "흡입매니폴드":
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return const AlertDialog(
+              title: Text("흡입매니폴드"),
+              content: Text("ㅇ"),
+            );
+          },
+        );
+      case "흡입 공기량":
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return const AlertDialog(
+              title: Text("흡입 공기량"),
+              content: Text("ㅇ"),
+            );
+          },
+        );
+      case "스트롤 포지션":
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return const AlertDialog(
+              title: Text("스트롤 포지션"),
+              content: Text("ㅇ"),
+            );
+          },
+        );
+      case "촉매 온도":
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return const AlertDialog(
+              title: Text("촉매 온도"),
+              content: Text("ㅇ"),
+            );
+          },
+        );
+      default:
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.all(16.0),
       child: ListTile(
         title: Text(title),
-        trailing: IconButton(
-          icon: const Icon(Icons.info),
-          onPressed: onPressed,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min, // Row의 크기를 최소로 설정하여 아이콘들이 왼쪽으로 정렬되도록 함
+          children: [
+            IconButton(
+              icon: const Icon(Icons.info), // graph 아이콘
+              onPressed: () => showInformation(title, context), // graph 아이콘 클릭 시 호출될 함수
+            ),
+            IconButton(
+              icon: const Icon(Icons.bar_chart),
+              onPressed: onPressed,
+            ),
+          ],
         ),
       ),
     );
-  }
+  } 
 }
+

@@ -35,20 +35,10 @@ class ObdData {
   static StreamController<double> _manifoldPressureController = StreamController<double>.broadcast();
   static Stream<double> get manifoldPressureStream => _manifoldPressureController.stream;
 
-  // 차량 내부 기온 변수 및 스트림
-  static double airTemperature = 0;
-  static StreamController<double> _airTemperatureController = StreamController<double>.broadcast();
-  static Stream<double> get  airTemperatureStream => _airTemperatureController.stream;
-
   // 흡입 공기량 변수 및 스트림
   static double maf = 0;
   static StreamController<double> _mafController = StreamController<double>.broadcast();
   static Stream<double> get  mafStream => _mafController.stream;
-
-  // 스트롤 포지션 변수 및 스트림
-  static double throttlePosition = 0;
-  static StreamController<double> _throttlePositionController = StreamController<double>.broadcast();
-  static Stream<double> get  throttlePositionStream => _throttlePositionController.stream;
 
   // 촉매 온도 변수 및 스트림
   static double catalystTemp = 0;
@@ -87,19 +77,9 @@ class ObdData {
     _manifoldPressureController.add(manifoldPressure);
   }
 
-  static void updateAirTemperature(double newAirTemp) {
-    airTemperature = newAirTemp;
-    _airTemperatureController.add(airTemperature);
-  }
-
   static void updateMaf(double newMaf) {
     maf = newMaf;
     _mafController.add(maf);
-  }
-
-  static void updateThrottlePosition(double newThrottlePosition) {
-    throttlePosition = newThrottlePosition;
-    _throttlePositionController.add(throttlePosition);
   }
 
   static void updateCatalystTempPosition(double newCatalystTemp) {
@@ -203,7 +183,12 @@ String paramJson = '''
             "unit": "kPa",
             "description": "<int>, [0]",
             "status": true
-        },
+        }
+      ]
+    ''';
+
+String paramJson2 = '''
+    [
         {
             "PID": "01 0C",
             "length": 2,
@@ -211,12 +196,7 @@ String paramJson = '''
             "unit": "RPM",
             "description": "<double>, (( [0] * 256) + [1] ) / 4",
             "status": true
-        }
-      ]
-    ''';
-
-String paramJson2 = '''
-    [
+        },
         {
             "PID": "01 0D",
             "length": 1,
@@ -226,26 +206,10 @@ String paramJson2 = '''
             "status": true
         },
         {
-            "PID": "01 0F",
-            "length": 1,
-            "title": "Intake air temperature",
-            "unit": "°C",
-            "description": "<int>, [0] - 40",
-            "status": true
-        },
-        {
             "PID": "01 10",
             "length": 1,
             "title": "Mass air flow sensor (MAF) air flow rate",
             "unit": "g/s",
-            "description": "<int>, (256 * [0] + [1]) / 100",
-            "status": true
-        },
-        {
-            "PID": "01 11",
-            "length": 1,
-            "title": "Throttle position",
-            "unit": "%",
             "description": "<int>, (256 * [0] + [1]) / 100",
             "status": true
         },
@@ -259,7 +223,6 @@ String paramJson2 = '''
         }
       ]
     ''';
-
 // OBD에서 DTC에 대한 JSON 데이터
 String dtcJson = '''
             [
