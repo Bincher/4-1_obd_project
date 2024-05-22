@@ -14,6 +14,7 @@ import '../../utils/csv_helper.dart'; // csv 데이터 관리
 import 'package:flutter_tts/flutter_tts.dart';
 
 bool isConnected = false;
+bool isInited = false;
 Obd2Plugin obd2 = Obd2Plugin();
 FlutterLocalNotificationsPlugin _local = FlutterLocalNotificationsPlugin();
 FlutterTts tts = FlutterTts();
@@ -32,7 +33,7 @@ void main() {
   });
 
   // 10분마다 local notification push, 시간 바꿀 것
-  Timer.periodic(const Duration(minutes: 10), (timer) async {
+  Timer.periodic(const Duration(minutes: 1), (timer) async {
     if(isConnected && diagnosisNotification){
 
       NotificationDetails details = const NotificationDetails(
@@ -337,7 +338,7 @@ Future<void> getDataFromObd(Obd2Plugin obd2) async {
     }
 
     // OBD 설정을 위한 JSON 데이터 전송
-    await Future.delayed(Duration(milliseconds: await obd2.configObdWithJSON(commandJson)), (){print("initSuccess");});
+    if(!isInited) await Future.delayed(Duration(milliseconds: await obd2.configObdWithJSON(commandJson)), (){print("initSuccess");isInited = true;});
     // 파라미터 데이터 요청
     await Future.delayed(Duration(milliseconds: await obd2.getParamsFromJSON(paramJson)), (){});
     await Future.delayed(Duration(milliseconds: await obd2.getParamsFromJSON(paramJson2)), (){print("getDataSuccess");});
@@ -356,7 +357,7 @@ Future<void> getDtcFromObd(Obd2Plugin obd2) async {
         // DTC 형식에 대한 정보가 없으므로 처리하지 않음
       });
     }
-    await Future.delayed(Duration(milliseconds: await obd2.configObdWithJSON(commandJson)), (){print("initSuccess");});
+    if(!isInited) await Future.delayed(Duration(milliseconds: await obd2.configObdWithJSON(commandJson)), (){print("initSuccess");isInited = true;});
     await Future.delayed(Duration(milliseconds: await obd2.getDTCFromJSON(dtcJson)), (){print("getDtcSuccess");});
   }
 }
@@ -408,7 +409,7 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
           );
         },
       );
-      //await getDtcFromObd(obd2);
+      await getDtcFromObd(obd2);
       Navigator.pop(context);
       Navigator.push(
         context,

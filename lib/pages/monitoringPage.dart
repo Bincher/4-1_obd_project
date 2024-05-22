@@ -699,16 +699,6 @@ class MonitoringCard extends StatelessWidget {
             );
           },
         );
-      case "스트롤 포지션":
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return const AlertDialog(
-              title: Text("스트롤 포지션"),
-              content: Text("ㅇ"),
-            );
-          },
-        );
       case "촉매 온도":
         showDialog(
           context: context,
