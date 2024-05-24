@@ -139,10 +139,6 @@ class MainPageState extends State<MainPage> {
               setButtonRow(context, firstButton: '차량진단', secondButton: '모니터링'),
               const SizedBox(height: 20),
               setButtonRow(context, firstButton: '알람', secondButton: '세팅'),
-              const SizedBox(height: 20),
-              setButtonRow(context,
-                  firstButton: '차량진단 오류',
-                  secondButton: 'TBD'), // 버튼 추가 (차량진단 오류, TBD)
             ],
           ),
         ),
@@ -166,9 +162,12 @@ Widget setButtonRow(BuildContext context,
   // 차량 진단
   Future<void> diagnoseVehicle() async {
     Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const DiagnosisPage()),
-    );
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => DiagnosisPage(
+                        diagnosticCodes: dtcArray.map((code) => SampleDiagnosticCodeData(code: code)).toList(),
+                      )),
+                );
   }
 
   return Row(
@@ -196,25 +195,7 @@ Widget setButtonRow(BuildContext context,
                   context,
                   MaterialPageRoute(builder: (context) => const AllimPage()),
                 );
-              } else if (firstButton.compareTo('차량진단 오류') == 0) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      // 진단 페이지 라우팅 with SampleDiagositcCodeData 객체
-                      builder: (context) => DiagnosisPage(
-                            diagnosticCodes: [
-                              SampleDiagnosticCodeData(
-                                  code: "P0001",
-                                  desctiption: "연료량 조절 시스템",
-                                  devices: "연료"),
-                              SampleDiagnosticCodeData(
-                                  code: "P0200",
-                                  desctiption: "인젝터 - 회로 오작동",
-                                  devices: "인젝터")
-                            ],
-                          )),
-                );
-              }
+              } 
             },
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,

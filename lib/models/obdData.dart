@@ -89,24 +89,19 @@ class ObdData {
 
 }
 
-
-// DTC 변수(예제)
-List<String> DTC = []; // X
+List<String> dtcArray = ["P0001", "P0200"];
 
 class SampleDiagnosticCodeData {
   final String code;
-  final String desctiption;
-  final String devices;
+
 
   SampleDiagnosticCodeData({
     required this.code,
-    required this.desctiption,
-    required this.devices,
   });
 
   @override
   String toString() {
-    return '$code: $desctiption';
+    return '$code';
   }
 }
 
@@ -227,9 +222,9 @@ String paramJson2 = '''
 String dtcJson = '''
             [
     {
-        "command": "03",
-        "description": "",
-        "status": true
-    }
-]
+                "command": "01 01",
+                "description": "",
+                "status": true
+            }
+  ]
           ''';

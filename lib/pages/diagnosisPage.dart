@@ -94,11 +94,6 @@ class DiagnosisPage extends StatelessWidget {
               '${diagnosticCodes!.length}개의 고장 코드 발견',
               style: const TextStyle(fontSize: 18.0),
             ),
-            Text(
-              // 문제가 있는 장치를 객체에 접근해서 추출
-              '문제가 있는 장치: ${diagnosticCodes!.map((code) => code.devices).join(', ')}',
-              style: const TextStyle(fontSize: 18.0),
-            ),
           ],
         ),
       ),
@@ -125,7 +120,6 @@ class DiagnosisPage extends StatelessWidget {
     return Card(
       child: ListTile(
         title: Text(code.code),
-        subtitle: Text(code.desctiption),
         trailing: IconButton(
           icon: const Icon(Icons.info),
           onPressed: () {

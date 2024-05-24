@@ -15,6 +15,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 
 bool isConnected = false;
 bool isInited = false;
+bool isRequestingDtc = false;
 Obd2Plugin obd2 = Obd2Plugin();
 FlutterLocalNotificationsPlugin _local = FlutterLocalNotificationsPlugin();
 FlutterTts tts = FlutterTts();
@@ -27,7 +28,8 @@ void main() {
   
   // 5초마다 get Monitoring Data 
   Timer.periodic(const Duration(seconds: 5), (timer) async {
-    if (isConnected) {
+    // DTC와 data 충돌 방지
+    if (isConnected && !isRequestingDtc) {
       await getDataFromObd(obd2);
     }
   });
@@ -271,8 +273,6 @@ class MainPageState extends State<MainPage> {
               setButtonRow(context, firstButton: '차량진단', secondButton: '모니터링'),
               const SizedBox(height: 20),
               setButtonRow(context, firstButton: '알람', secondButton: '세팅'),
-              const SizedBox(height: 20),
-              setButtonRow(context, firstButton: '차량진단 오류', secondButton: 'TBD'),
             ],
           ),
         ),
@@ -351,14 +351,21 @@ Future<void> getDtcFromObd(Obd2Plugin obd2) async {
     await obd2.enableBluetooth;
   }
   if (await obd2.hasConnection) {
+    isRequestingDtc = true;
     if (!(await obd2.isListenToDataInitialed)) {
       obd2.setOnDataReceived((command, response, requestCode) {
         print("$command => $response");
         // DTC 형식에 대한 정보가 없으므로 처리하지 않음
+        //dtcArray = [];
+        if (command == "DTC" && response.startsWith('[') && response.endsWith(']')) {
+          List<dynamic> dtcList = json.decode(response);
+          dtcArray = List<String>.from(dtcList);
+          print("DTC Array: $dtcArray");
+        }
       });
     }
     if(!isInited) await Future.delayed(Duration(milliseconds: await obd2.configObdWithJSON(commandJson)), (){print("initSuccess");isInited = true;});
-    await Future.delayed(Duration(milliseconds: await obd2.getDTCFromJSON(dtcJson)), (){print("getDtcSuccess");});
+    await Future.delayed(Duration(milliseconds: await obd2.getDTCFromJSON(dtcJson)), (){print("getDtcSuccess");isRequestingDtc = false;});
   }
 }
 
@@ -412,9 +419,12 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
       await getDtcFromObd(obd2);
       Navigator.pop(context);
       Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const DiagnosisPage()),
-      );
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => DiagnosisPage(
+                        diagnosticCodes: dtcArray.map((code) => SampleDiagnosticCodeData(code: code)).toList(),
+                      )),
+                );
     } else {
       showDialog(
         context: context,
@@ -467,26 +477,7 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
                   context,
                   MaterialPageRoute(builder: (context) => const AllimPage()),
                 );
-              } else if (firstButton.compareTo('차량진단 오류') == 0) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => DiagnosisPage(
-                        diagnosticCodes: [
-                          SampleDiagnosticCodeData(
-                            code: "P0001",
-                            desctiption: "연료량 조절 시스템",
-                            devices: "연료",
-                          ),
-                          SampleDiagnosticCodeData(
-                            code: "P0200",
-                            desctiption: "인젝터 - 회로 오작동",
-                            devices: "인젝터",
-                          ),
-                        ],
-                      )),
-                );
-              }
+              } 
             },
           ),
         ),
@@ -562,7 +553,7 @@ Future<String> getMessage() async {
   await getDtcFromObd(obd2);
 
   String msg = "";
-  if(DTC.isEmpty) {
+  if(dtcArray.isEmpty) {
     msg += "진단코드 : 없음\n";
   } else {
     msg += "진단코드 : 있음(진단버튼 클릭 필요)\n";
