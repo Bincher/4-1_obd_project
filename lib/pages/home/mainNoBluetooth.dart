@@ -11,6 +11,7 @@ import '../../utils/csv_helper.dart';
 
 Random random = Random();
 
+
 // 앱의 진입점
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,24 +28,40 @@ void main() {
 
 // 앱의 루트 위젯
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key});
+
+  static final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
+
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: '차량 정비 앱',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: const MainPage(),
+    return ValueListenableBuilder(
+      valueListenable: themeNotifier,
+      builder:(context, value, child){
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'OBD 차량 스캐너',
+          darkTheme: ThemeData(
+            brightness: Brightness.dark,
+            // 왜 안될까...
+            // elevatedButtonTheme: ElevatedButtonThemeData(
+            //     style: ButtonStyle(
+            //       backgroundColor: MaterialStateProperty.resolveWith((states) => Colors.indigo
+            //       ),
+            //     )
+            // )
+          ),
+          themeMode: value,
+          home: const MainPage(),
+        );
+      },
     );
   }
 }
 
 // 메인 페이지 위젯
 class MainPage extends StatefulWidget {
-  const MainPage({Key? key}) : super(key: key);
+  const MainPage({super.key});
 
   // State 객체를 가져오는 정적 메서드
   static MainPageState of(BuildContext context) =>
@@ -73,17 +90,12 @@ class MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
+    
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.home),
-          onPressed: () {
-            // 홈 아이콘 버튼 기능
-          },
-        ),
         title: const Text(
-          '차량 정비 Application',
+          'OBD 차량 스캐너',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 20.0,
@@ -93,13 +105,16 @@ class MainPageState extends State<MainPage> {
       body: SingleChildScrollView(
         child: Center(
           child: Column(
+            
             children: <Widget>[
               const SizedBox(height: 20),
               
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.black,
-                  backgroundColor: Colors.white,
+                  backgroundColor: const Color.fromRGBO(255, 255, 255, 1), 
+                  padding: const EdgeInsets.all(20),
+                  elevation: 1,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10.0),
                   ),
@@ -178,11 +193,12 @@ Widget setButtonRow(BuildContext context,
         height: buttonSize,
         margin: const EdgeInsets.all(10),
         child: Card(
-          elevation: 3,
+          elevation: 2,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
               foregroundColor: Colors.black,
-              backgroundColor: Colors.white,
+              backgroundColor: Colors.white, 
+              elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10.0),
               ),
@@ -219,11 +235,12 @@ Widget setButtonRow(BuildContext context,
         height: buttonSize,
         margin: const EdgeInsets.all(10),
         child: Card(
-          elevation: 3,
+          elevation: 2,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
               foregroundColor: Colors.black,
               backgroundColor: Colors.white,
+              elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10.0),
               ),

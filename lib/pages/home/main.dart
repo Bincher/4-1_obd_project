@@ -71,16 +71,30 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+  static final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: '차량 정비 앱',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: const MainPage(),
+    return ValueListenableBuilder(
+      valueListenable: themeNotifier,
+      builder:(context, value, child){
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'OBD 차량 스캐너',
+          darkTheme: ThemeData(
+            brightness: Brightness.dark,
+            // 왜 안될까...
+            // elevatedButtonTheme: ElevatedButtonThemeData(
+            //     style: ButtonStyle(
+            //       backgroundColor: MaterialStateProperty.resolveWith((states) => Colors.indigo
+            //       ),
+            //     )
+            // )
+          ),
+          themeMode: value,
+          home: const MainPage(),
+        );
+      },
     );
   }
 }
@@ -214,12 +228,8 @@ class MainPageState extends State<MainPage> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.home),
-          onPressed: () {},
-        ),
         title: const Text(
-          '차량 정비 Application',
+          'OBD 차량 스캐너',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 20.0,
@@ -235,6 +245,8 @@ class MainPageState extends State<MainPage> {
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.black,
                   backgroundColor: Colors.white,
+                  padding: const EdgeInsets.all(20),
+                  elevation: 1,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10.0),
                   ),
@@ -446,11 +458,12 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
         height: buttonSize,
         margin: const EdgeInsets.all(10),
         child: Card(
-          elevation: 3,
+          elevation: 2,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
               foregroundColor: Colors.black,
               backgroundColor: Colors.white,
+              elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10.0),
               ),
@@ -487,11 +500,12 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
         height: buttonSize,
         margin: const EdgeInsets.all(10),
         child: Card(
-          elevation: 3,
+          elevation: 2,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
               foregroundColor: Colors.black,
               backgroundColor: Colors.white,
+              elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10.0),
               ),

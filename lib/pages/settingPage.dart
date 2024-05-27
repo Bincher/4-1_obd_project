@@ -2,26 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:settings_ui/settings_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-void main() {
-  runApp(MyApp());
-}
+import 'home/main.dart';
 
-bool darkModeEnabled = false;
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Settings Example',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        brightness: darkModeEnabled ? Brightness.dark : Brightness.light,
-      ),
-      home: SettingPage(),
-    );
-  }
-}
-
+bool _isLightMode = false;
 class SettingPage extends StatefulWidget {
   const SettingPage({Key? key}) : super(key: key);
 
@@ -45,11 +28,15 @@ class SettingPageState extends State<SettingPage> {
             tiles: <SettingsTile>[
               SettingsTile.switchTile(
                 title: Text('다크 모드'),
-                initialValue: darkModeEnabled,
+                initialValue: _isLightMode,
                 onToggle: (value) {
                   setState(() {
-                    darkModeEnabled = value;
+                    _isLightMode = value;
                   });
+                  MyApp.themeNotifier.value =
+                    MyApp.themeNotifier.value == ThemeMode.light
+                      ? ThemeMode.dark
+                      : ThemeMode.light;
                 },
                 leading: Icon(Icons.nightlight_round),
               ),
