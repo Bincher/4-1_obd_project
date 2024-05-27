@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'dart:async';
 import '../models/obdData.dart';
@@ -22,6 +21,7 @@ class MonitoringPageState extends State<MonitoringPage> {
     dialogContent: '엔진 냉각 온도 그래프',
     unit: '℃',
     fileName: 'engine_temp',
+    normalRange: const Range(82, 105),
   );
 
   final MonitoringCardData batteryVoltageCard = MonitoringCardData(
@@ -30,6 +30,7 @@ class MonitoringPageState extends State<MonitoringPage> {
     dialogContent: '배터리 전압 그래프',
     unit: 'V',
     fileName: 'battery_voltage',
+    normalRange: const Range(12.6, 14.7),
   );
 
   final MonitoringCardData engineRpmCard = MonitoringCardData(
@@ -38,6 +39,7 @@ class MonitoringPageState extends State<MonitoringPage> {
     dialogContent: '엔진 RPM 그래프',
     unit: 'RPM',
     fileName: 'engine_rpm',
+    normalRange: const Range(600, 3000),
   );
 
   final MonitoringCardData vehicleSpeedCard = MonitoringCardData(
@@ -46,6 +48,7 @@ class MonitoringPageState extends State<MonitoringPage> {
     dialogContent: '속력 그래프',
     unit: 'km/h',
     fileName: 'vehicle_speed',
+    normalRange: const Range(0, 220),
   );
 
   final MonitoringCardData engineLoadCard = MonitoringCardData(
@@ -54,6 +57,7 @@ class MonitoringPageState extends State<MonitoringPage> {
     dialogContent: '엔진 과부화 그래프',
     unit: '%',
     fileName: 'engine_load',
+    normalRange: const Range(15, 75),
   );
 
   final MonitoringCardData manifoldPressureCard = MonitoringCardData(
@@ -62,6 +66,7 @@ class MonitoringPageState extends State<MonitoringPage> {
     dialogContent: '흡입매니폴드 그래프',
     unit: 'kPa',
     fileName: 'manifold_pressure',
+    normalRange: const Range(30, 250),
   );
 
   final MonitoringCardData airTemperatureCard = MonitoringCardData(
@@ -78,6 +83,7 @@ class MonitoringPageState extends State<MonitoringPage> {
     dialogContent: '흡입 공기량 그래프',
     unit: 'g/s',
     fileName: 'maf',
+    normalRange: const Range(4, 25),
   );
 
   final MonitoringCardData catalystTempCard = MonitoringCardData(
@@ -86,6 +92,7 @@ class MonitoringPageState extends State<MonitoringPage> {
     dialogContent: '촉매 온도 그래프',
     unit: '°C',
     fileName: 'catalyst_temp',
+    normalRange: const Range(300, 800),
   );
 
   // 데이터 구독을 통해 실시간 업데이트를 위해 스트림을 구독
@@ -157,7 +164,6 @@ class MonitoringPageState extends State<MonitoringPage> {
         mafCard.saveDataToCsv(); // CSV에 저장
       });
     });
-
 
     _catalystTempSubscription = ObdData.catalystTempStream.listen((temp) {
       setState(() {
@@ -401,96 +407,153 @@ class _MonitoringCardGraphPageState extends State<MonitoringCardGraphPage> {
             ),
           ),
           // fl_chart를 사용하여 라인 차트 생성
-          SizedBox(
-            height: MediaQuery.of(context).size.height * 0.4,
-            width: MediaQuery.of(context).size.width * 0.9,
-            child: LineChart(
-              LineChartData(
-                borderData: FlBorderData(show: false),
-                gridData: FlGridData(
-                  show: true,
-                  drawHorizontalLine: true,
-                  drawVerticalLine: false,
-                  horizontalInterval: widget.card.title == '엔진 RPM' ? 300.0 : 10.0,
-                  getDrawingHorizontalLine: (value) => FlLine(
-                    color: Colors.grey.withOpacity(0.5),
-                    strokeWidth: 1,
-                  ),
-                ),
-                titlesData: FlTitlesData(
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      interval: intervalBetweenLabels,
-                      getTitlesWidget: (value, _) {
-                        final index = value.toInt();
-                        final adjustedIndex = index + chartOffset;
-                        if (adjustedIndex >= 0 && adjustedIndex < widget.card.data.length) {
-                          final timestamp = widget.card.data[adjustedIndex]['timestamp'] as DateTime;
-                          if (chartInterval == 12) {
-                            return Text(
-                              '${timestamp.hour}:${timestamp.minute}:${timestamp.second}',
-                              style: const TextStyle(fontSize: 10, color: Colors.black),
-                            );
-                          } else {
-                            return Text(
-                              '${timestamp.hour}:${timestamp.minute}',
-                              style: const TextStyle(fontSize: 10, color: Colors.black),
-                            );
-                          }
-                        } else {
-                          return const Text('');
-                        }
-                      },
-                    ),
-                  ),
-                  leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                ),
-                // 라인 차트 데이터
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: widget.card.getChartData(chartInterval, chartOffset),
-                    isCurved: true,
-                    barWidth: 3,
-                    color: Theme.of(context).primaryColor,
-                    dotData: FlDotData(
-                      show: true,
-                      getDotPainter: (spot, _, __, ___) => FlDotCirclePainter(
-                        radius: 3,
-                        color: Theme.of(context).primaryColor,
-                        strokeColor: Theme.of(context).primaryColor.withOpacity(0.6),
-                      ),
-                    ),
-                    belowBarData: BarAreaData(
-                      show: true,
-                      gradient: LinearGradient(
-                        colors: [Theme.of(context).primaryColor.withOpacity(0.3), Colors.transparent],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                    ),
-                  ),
-                ],
-                // 차트 상의 데이터를 선택할 때 반응하는 인터랙션
-                lineTouchData: LineTouchData(
-                  handleBuiltInTouches: true,
-                  touchCallback: (FlTouchEvent event, LineTouchResponse? touchResponse) {
-                    if (touchResponse != null && touchResponse.lineBarSpots != null && touchResponse.lineBarSpots!.isNotEmpty) {
-                      final touchedSpot = touchResponse.lineBarSpots![0];
-                      final adjustedIndex = touchedSpot.x.toInt() + chartOffset;
-                      if (adjustedIndex >= 0 && adjustedIndex < widget.card.data.length) {
-                        setState(() {
-                          selectedData = widget.card.data[adjustedIndex]; // 선택된 데이터 저장
-                        });
-                      }
-                    }
-                  },
-                ),
-              ),
+SizedBox(
+  height: MediaQuery.of(context).size.height * 0.4,
+  width: MediaQuery.of(context).size.width * 0.9,
+  child: LineChart(
+    LineChartData(
+      borderData: FlBorderData(show: false),
+      gridData: FlGridData(
+        show: true,
+        drawHorizontalLine: true,
+        drawVerticalLine: false,
+        horizontalInterval: widget.card.title == '엔진 RPM' ? 300.0 : 10.0,
+        getDrawingHorizontalLine: (value) => FlLine(
+          color: Colors.grey.withOpacity(0.5),
+          strokeWidth: 1,
+        ),
+      ),
+      titlesData: FlTitlesData(
+        bottomTitles: AxisTitles(
+          sideTitles: SideTitles(
+            showTitles: true,
+            interval: intervalBetweenLabels,
+            getTitlesWidget: (value, _) {
+              final index = value.toInt();
+              final adjustedIndex = index + chartOffset;
+              if (adjustedIndex >= 0 && adjustedIndex < widget.card.data.length) {
+                final timestamp = widget.card.data[adjustedIndex]['timestamp'] as DateTime;
+                if (chartInterval == 12) {
+                  return Text(
+                    '${timestamp.hour}:${timestamp.minute}:${timestamp.second}',
+                    style: const TextStyle(fontSize: 10, color: Colors.black),
+                  );
+                } else {
+                  return Text(
+                    '${timestamp.hour}:${timestamp.minute}',
+                    style: const TextStyle(fontSize: 10, color: Colors.black),
+                  );
+                }
+              } else {
+                return const Text('');
+              }
+            },
+          ),
+        ),
+        leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+      ),
+      lineBarsData: [
+        LineChartBarData(
+          spots: widget.card.getChartData(chartInterval, chartOffset),
+          isCurved: true,
+          barWidth: 3,
+          color: Theme.of(context).primaryColor,
+          dotData: FlDotData(
+            show: true,
+            getDotPainter: (spot, _, __, ___) => FlDotCirclePainter(
+              radius: 3,
+              color: Theme.of(context).primaryColor,
+              strokeColor: Theme.of(context).primaryColor.withOpacity(0.6),
             ),
           ),
+        ),
+        // 정상 범위의 위쪽 영역을 그라데이션으로 표시
+        if (widget.card.normalRange != null)
+          LineChartBarData(
+            spots: widget.card
+                .getChartData(chartInterval, chartOffset)
+                .map((spot) => FlSpot(spot.x, widget.card.normalRange!.end))
+                .toList(),
+            isCurved: true,
+            barWidth: 0,
+            belowBarData: BarAreaData(
+              show: true,
+              gradient: LinearGradient(
+                colors: [
+                  Colors.green.withOpacity(0.3),
+                  Colors.transparent,
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+              cutOffY: widget.card.normalRange!.end,
+              applyCutOffY: true,
+            ),
+          ),
+        // 정상 범위의 아래쪽 영역을 그라데이션으로 표시
+        if (widget.card.normalRange != null)
+          LineChartBarData(
+            spots: widget.card
+                .getChartData(chartInterval, chartOffset)
+                .map((spot) => FlSpot(spot.x, widget.card.normalRange!.start))
+                .toList(),
+            isCurved: true,
+            barWidth: 0,
+            belowBarData: BarAreaData(
+              show: true,
+              gradient: LinearGradient(
+                colors: [
+                  Colors.transparent,
+                  Colors.green.withOpacity(0.3),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+              cutOffY: widget.card.normalRange!.start,
+              applyCutOffY: true,
+            ),
+          ),
+      ],
+      // 차트 상의 정상 범위를 라인으로 표시
+      extraLinesData: widget.card.normalRange != null
+          ? ExtraLinesData(
+              horizontalLines: [
+                HorizontalLine(
+                  y: widget.card.normalRange!.start,
+                  color: Colors.green.withOpacity(0.6),
+                  strokeWidth: 2,
+                ),
+                HorizontalLine(
+                  y: widget.card.normalRange!.end,
+                  color: Colors.green.withOpacity(0.6),
+                  strokeWidth: 2,
+                ),
+              ],
+            )
+          : null,
+      lineTouchData: LineTouchData(
+        handleBuiltInTouches: true,
+        touchCallback: (FlTouchEvent event, LineTouchResponse? touchResponse) {
+          if (touchResponse != null &&
+              touchResponse.lineBarSpots != null &&
+              touchResponse.lineBarSpots!.isNotEmpty) {
+            final touchedSpot = touchResponse.lineBarSpots![0];
+            final adjustedIndex = touchedSpot.x.toInt() + chartOffset;
+            if (adjustedIndex >= 0 &&
+                adjustedIndex < widget.card.data.length) {
+              setState(() {
+                selectedData = widget.card.data[adjustedIndex]; // 선택된 데이터 저장
+              });
+            }
+          }
+        },
+      ),
+    ),
+  ),
+),
+
           // 차트 이동을 위한 화살표 버튼
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -550,9 +613,22 @@ class _MonitoringCardGraphPageState extends State<MonitoringCardGraphPage> {
                     style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
                   ),
                   const Divider(),
-                  Text(
-                    '데이터: ${selectedData!['value']} ${widget.card.unit}',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                  Row(
+                    children: [
+                      Text(
+                        '데이터: ${selectedData!['value']} ${widget.card.unit}',
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        _isInNormalRange(selectedData!['value']) ? '정상' : '비정상',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: _isInNormalRange(selectedData!['value']) ? Colors.green : Colors.red,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -560,6 +636,10 @@ class _MonitoringCardGraphPageState extends State<MonitoringCardGraphPage> {
         ],
       ),
     );
+  }
+
+  bool _isInNormalRange(double value) {
+    return value >= widget.card.normalRange!.start && value <= widget.card.normalRange!.end;
   }
 }
 
@@ -571,6 +651,7 @@ class MonitoringCardData {
   final String unit;
   final String fileName;
   final List<Map<String, dynamic>> data = [];
+  final Range? normalRange;
 
   MonitoringCardData({
     required this.title,
@@ -578,6 +659,7 @@ class MonitoringCardData {
     required this.dialogContent,
     required this.unit,
     required this.fileName,
+    this.normalRange,
   });
 
   // 새로운 데이터 포인트를 추가
@@ -613,6 +695,13 @@ class MonitoringCardData {
     final limitedData = data.skip(offset).take(maxPoints).toList();
     return limitedData.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value['value'])).toList();
   }
+}
+
+class Range {
+  final double start;
+  final double end;
+
+  const Range(this.start, this.end);
 }
 
 // 각 모니터링 카드를 위한 위젯
@@ -780,4 +869,3 @@ class MonitoringCard extends StatelessWidget {
     );
   } 
 }
-

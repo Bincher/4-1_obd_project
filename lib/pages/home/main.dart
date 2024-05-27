@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../allimPage.dart';
 import '../diagnosisPage.dart';
 import '../monitoringPage.dart';
@@ -16,6 +17,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 bool isConnected = false;
 bool isInited = false;
 bool isRequestingDtc = false;
+bool isRequestingData = false;
 Obd2Plugin obd2 = Obd2Plugin();
 FlutterLocalNotificationsPlugin _local = FlutterLocalNotificationsPlugin();
 FlutterTts tts = FlutterTts();
@@ -228,6 +230,16 @@ class MainPageState extends State<MainPage> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.perm_device_information),
+          onPressed: () async {
+            if (await canLaunch('https://bincher.notion.site/App-622593d1186540c3a710d222e3180221?pvs=4')) {
+              await launch('https://bincher.notion.site/App-622593d1186540c3a710d222e3180221?pvs=4');
+            } else {
+              throw 'Could not launch url';
+            }
+          },
+        ),
         title: const Text(
           'OBD 차량 스캐너',
           textAlign: TextAlign.center,
@@ -302,6 +314,7 @@ Future<void> getDataFromObd(Obd2Plugin obd2) async {
   }
   // 연결된 경우 데이터 수신 시작
   if (await obd2.hasConnection) {
+    isRequestingData = true;
     // 데이터 수신이 초기화되지 않은 경우 수신 리스너 설정
     if (!(await obd2.isListenToDataInitialed)) {
       obd2.setOnDataReceived((command, response, requestCode) {
@@ -353,17 +366,21 @@ Future<void> getDataFromObd(Obd2Plugin obd2) async {
     if(!isInited) await Future.delayed(Duration(milliseconds: await obd2.configObdWithJSON(commandJson)), (){print("initSuccess");isInited = true;});
     // 파라미터 데이터 요청
     await Future.delayed(Duration(milliseconds: await obd2.getParamsFromJSON(paramJson)), (){});
-    await Future.delayed(Duration(milliseconds: await obd2.getParamsFromJSON(paramJson2)), (){print("getDataSuccess");});
+    await Future.delayed(Duration(milliseconds: await obd2.getParamsFromJSON(paramJson2)), (){print("getDataSuccess"); isRequestingData = false;});
   }
 }
 
 /// OBD2 장치로부터 DTC를 가져오는 함수
 Future<void> getDtcFromObd(Obd2Plugin obd2) async {
+  
   if (!(await obd2.isBluetoothEnable)) {
     await obd2.enableBluetooth;
   }
   if (await obd2.hasConnection) {
     isRequestingDtc = true;
+    if (isRequestingData){
+      await Future.delayed(Duration(seconds: 5));
+    } 
     if (!(await obd2.isListenToDataInitialed)) {
       obd2.setOnDataReceived((command, response, requestCode) {
         print("$command => $response");
