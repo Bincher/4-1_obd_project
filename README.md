@@ -8,39 +8,11 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
 
 - 실행하실때 chat-GPT api-key는 꼭 넣어주세요. 여기선 보안상 뺐습니다.
 
-- 현재 test 코드 작성중...
-
-    - 5/9 기준 main.dart에 대한 기본적인 test code 작성
-
-    - 블루투스 여부 test code 작성 가능여부 확인중
-
-- 앱 이미지 : <a href="https://www.flaticon.com/kr/free-icons/" title="자발적인 아이콘">자발적인 아이콘 제작자: rukanicon - Flaticon</a>
-
-    - 오픈소스 라이선스에 넣을 것
-
-- 아이콘 이미지
-    
-    - <a href="https://www.flaticon.com/kr/free-icons/" title="블루투스 아이콘">블루투스 아이콘 제작자: lakonicon - Flaticon</a>
-
-    - <a href="https://www.flaticon.com/kr/free-icons/-" title="자동차 진단 아이콘">자동차 진단 아이콘 제작자: kliwir art - Flaticon</a>
-
-    - <a href="https://www.flaticon.com/kr/free-icons/-" title="소프트웨어 개발 아이콘">소프트웨어 개발 아이콘 제작자: kliwir art - Flaticon</a>
-
-    - <a href="https://www.flaticon.com/kr/free-icons/" title="설정 아이콘">설정 아이콘 제작자: kliwir art - Flaticon</a>
-
-    - <a href="https://www.flaticon.com/kr/free-icons/" title="알림 아이콘">알림 아이콘 제작자: kliwir art - Flaticon</a>
-
-    - <a href="https://www.flaticon.com/kr/free-icons/ecg-" title="ecg 모니터 아이콘">Ecg 모니터 아이콘 제작자: kliwir art - Flaticon</a>
-
-    - <a href="https://www.flaticon.com/kr/free-icons/" title="경고 아이콘">경고 아이콘 제작자: Creatype - Flaticon</a>
-
-    <a href="https://www.flaticon.com/kr/free-icons/foursquare-" title="foursquare 체크인 아이콘">Foursquare 체크인 아이콘 제작자: hqrloveq - Flaticon</a>
-
-    - 오픈소스 라이선스에 넣을 것
-
 - 블루투스 없는 버전 : mainNoBluetooth.dart 실행
 
-    - 다만, 일부 기능은 사용이 불가하며 일부 기능은 사소한 버그가 존재할 수 있음(블루투스 기능 등)
+    - 다만, 일부 기능은 사용이 불가하며 일부 기능은 사소한 버그가 존재할 수 있음
+
+    - 누락된 내용 : 모니터링 일부 데이터
 
 - 블루투스 있는 버전 : main.dart 실행
 
@@ -50,7 +22,7 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
 
     - 일단, 스크린샷 화면은 올려놓겠습니다
 
-진행상황 (2024.05.09)
+진행상황 (2024.05.29)
 
 1. main.dart
 
@@ -82,15 +54,11 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
 
     - 차량진단 버튼 -> diagnosisPage.dart 와 연결
 
-        - 차량진단 오류 버튼 -> diagnosisPage.dart 와 연결됨과 동시에 오류코드가 존재할때의 페이지를 출력, 개발을 위한 버튼으로 최종 완성시 삭제 예정
-
     - 모니터링 버튼 -> monitoringPage.dart 와 연결
 
     - 알람 버튼 -> allimPage.dart 와 연결
 
     - 세팅 버튼 -> settingPage.dart 와 연결
-
-    - TBD 버튼 -> 아무 내용도 없는 버튼, 개발을 위한 버튼으로 최종 완성시 삭제 예정
 
 2. diagnosisPage.dart
 
@@ -106,13 +74,15 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
 
         - 이슈! : 아직까지도 차량 진단 결과물이 어떻게 출력되는지 확인을 못함
 
-        - DTC => []
+            - DTC => []
 
-        - 위 내용을 바탕으로 추측해서 만드는 것이 최선
+            - 구글링을 통해 ['P0001','P0002] 형식인건 확인 됨
+
+                - 직접 확인되기전까진 해당 형식을 바탕으로 개발
 
     - 고장 코드가 있을 때 표시되는 내용 위젯
 
-        - 차량진단 오류 버튼을 누르면 진단 결과 P0001과 P0200이 나오는 것을 가정
+        - 차량진단 버튼을 누르면 에뮬레이터상 개발을 위해 진단 결과 P0001과 P0200이 나오는 것을 가정
 
         - 차량 진단 결과와 고장 코드에 대한 정보를 출력
 
@@ -128,29 +98,29 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
 
         - 실행에 문제가 되는건 아니기때문에 최후 순위로 둘 예정
 
-    - 추가 사항 : subtitle: Text(content), // Null 체크를 추가 -> flutter 권장대로 제거했습니다 (?? : "contents")
-
-        - 플러터 권장에 따라 ?? 를 삭제하였습니다.
-
 3. monitoringPage.dart
 
     - 검색창과 데이터 출력
 
-    - 데이터는 (일단은) 블루투스 데이터 통신으로 값을 받아옴
+        - 데이터는 (일단은) 블루투스 데이터 통신으로 값을 받아옴
 
-    - provider를 이용한 데이터 연동
+        - provider를 이용한 데이터 연동
+
+        - 검색창을 사용하여 원하는 데이터를 검색 가능
 
     - 오른쪽 i버튼을 누르면 다이얼로그 생성
 
-    - 다이얼로그에는 그래프가 존재
+        - 다이얼로그에는 해당 데이터의 정보가 존재
 
-        - main.dart에선 flchart
+    - 오른쪽 그래프 버튼을 누르면 그래프 페이지가 실행
+    
+        - 그래프페이지는 각 시간별 데이터 값들을 그래프를 통해 출력
 
-        - mainNoBluetooth.dart에선 graphic
+        - 원하는 시간의 데이터를 확인 가능
 
-    - 현재는 monitoringPage는 flchart를 기준으로 만들어져있고
+        - 그래프 시간 범위 변경 가능
 
-        - graphic은 따로 코드를 복붙하시면 됩니다.
+        - 각 데이터별 정상범위 및 이상 유무를 확인 가능
 
 4. allamPage.dart
 
@@ -158,11 +128,9 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
 
         - 현재 알람 기능을 임시로 구현
 
-        - 지금은 5초지만 실제로는 10분, 20분, 30분 등의 시간으로 설정할 예정
+        - 지금은 1분이지만 실제로는 10분으로 설정 예정
     
-    - 이슈! : DTC를 받는거랑 MonitoringData를 받는게 겹치면 충돌 발생
-
-        - 해결방법 찾는중 
+    - 이슈!(해결 완료) : DTC를 받는거랑 MonitoringData를 받는게 겹치면 충돌 발생
 
     - 진단 알림 받기
         
@@ -184,17 +152,15 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
 
         - ON으로 하면 차량 진단 결과로 DTC가 없는걸로 나오면 알림을 보내주지 않음
 
-        - 기능은 임시로 구현
-
-            - 수요일에 의견 종합 예정
-
 5. settingPage.dart
 
     - 세팅 페이지를 구현
 
     - 다크모드, 버전, 도움말, 이용자 약관, 오픈소스 라이센스, 개발자에게 연락
 
-    - 기능은 아직 구현전
+    - 다크코드, 도움말, 개발자에게 연락 구현 완료
+
+        - 다크모드는 일부만 구현
 
 6. obd2_plugin.dart
 
@@ -221,3 +187,24 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
         - https://en.wikipedia.org/wiki/OBD-II_PIDs
     - bluetooth-serial 라이브러리 문제 해결 방법
         - https://stackoverflow.com/questions/75906535/flutter-bluetooth-permission-missing-in-manifest
+    - 앱 이미지 : <a href="https://www.flaticon.com/kr/free-icons/" title="자발적인 아이콘">자발적인 아이콘 제작자: rukanicon - Flaticon</a>
+
+    - 오픈소스 라이선스에 넣을 것
+
+- 아이콘 이미지
+    
+    - <a href="https://www.flaticon.com/kr/free-icons/" title="블루투스 아이콘">블루투스 아이콘 제작자: lakonicon - Flaticon</a>
+
+    - <a href="https://www.flaticon.com/kr/free-icons/-" title="자동차 진단 아이콘">자동차 진단 아이콘 제작자: kliwir art - Flaticon</a>
+
+    - <a href="https://www.flaticon.com/kr/free-icons/-" title="소프트웨어 개발 아이콘">소프트웨어 개발 아이콘 제작자: kliwir art - Flaticon</a>
+
+    - <a href="https://www.flaticon.com/kr/free-icons/" title="설정 아이콘">설정 아이콘 제작자: kliwir art - Flaticon</a>
+
+    - <a href="https://www.flaticon.com/kr/free-icons/" title="알림 아이콘">알림 아이콘 제작자: kliwir art - Flaticon</a>
+
+    - <a href="https://www.flaticon.com/kr/free-icons/ecg-" title="ecg 모니터 아이콘">Ecg 모니터 아이콘 제작자: kliwir art - Flaticon</a>
+
+    - <a href="https://www.flaticon.com/kr/free-icons/" title="경고 아이콘">경고 아이콘 제작자: Creatype - Flaticon</a>
+
+    <a href="https://www.flaticon.com/kr/free-icons/foursquare-" title="foursquare 체크인 아이콘">Foursquare 체크인 아이콘 제작자: hqrloveq - Flaticon</a>

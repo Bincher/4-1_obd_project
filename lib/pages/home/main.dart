@@ -387,8 +387,10 @@ Future<void> getDtcFromObd(Obd2Plugin obd2) async {
         // DTC 형식에 대한 정보가 없으므로 처리하지 않음
         //dtcArray = [];
         if (command == "DTC" && response.startsWith('[') && response.endsWith(']')) {
-          List<dynamic> dtcList = json.decode(response);
-          dtcArray = List<String>.from(dtcList);
+          // 주석 제거할 것
+          // List<dynamic> dtcList = json.decode(response);
+          // dtcArray = List<String>.from(dtcList);
+          dtcArray = ["P0001", "P0200"];
           print("DTC Array: $dtcArray");
         }
       });
