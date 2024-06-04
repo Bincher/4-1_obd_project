@@ -16,7 +16,7 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
 
 - 블루투스 있는 버전 : main.dart 실행
 
-- 노션 업데이트 예정 : https://www.notion.so/bincher/APP-a94b22d3d0d14595bbbe7689ab74f201
+- 노션 업데이트 예정 : https://bincher.notion.site/APP-a94b22d3d0d14595bbbe7689ab74f201
 
     - 통합 예정 : https://bincher.notion.site/OBD-3ff8c205246d4af09e46f92234ca2822?pvs=4
 
