@@ -15,39 +15,46 @@ class DiagnosisPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('차량진단'),
       ),
-      body: Center(
-        child: Column(
-          children: [
-            const Text(
-              '차량진단',
-              style: TextStyle(fontSize: 24.0),
-            ),
-            const SizedBox(height: 20.0),
-            diagnosticCodes == null || diagnosticCodes!.isEmpty
-                ? _buildNoDiagnosticCodesCard()
-                : _buildDiagnosticCodesCard(),
-            const SizedBox(height: 20.0),
-            const Text(
-              '고장코드',
-              style: TextStyle(fontSize: 24.0),
-            ),
-            const SizedBox(height: 20.0),
-            diagnosticCodes == null || diagnosticCodes!.isEmpty
-                ? _buildNoDiagnosticCodesCardContent()
-                : Column(
-                    // Column으로 고장 코드 카드 위젯 반환
-                    children: diagnosticCodes!.map((code) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: _buildDiagnosticCodesCardContent(code, context),
-                      );
-                    }).toList(),
-                  )
-          ],
+      body: SingleChildScrollView(
+        child: Center(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center, // 중앙 정렬
+            children: [
+              const SizedBox(height: 20.0), // 상단 여백 추가
+              const Text(
+                '차량진단',
+                style: TextStyle(fontSize: 24.0),
+              ),
+              const SizedBox(height: 20.0),
+              diagnosticCodes == null || diagnosticCodes!.isEmpty
+                  ? _buildNoDiagnosticCodesCard()
+                  : _buildDiagnosticCodesCard(),
+              const SizedBox(height: 20.0),
+              const Text(
+                '고장코드',
+                style: TextStyle(fontSize: 24.0),
+              ),
+              const SizedBox(height: 20.0),
+              diagnosticCodes == null || diagnosticCodes!.isEmpty
+                  ? _buildNoDiagnosticCodesCardContent()
+                  : Column(
+                      // Column으로 고장 코드 카드 위젯 반환
+                      crossAxisAlignment: CrossAxisAlignment.start, // 카드 내용은 왼쪽 정렬
+                      children: diagnosticCodes!.map((code) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: _buildDiagnosticCodesCardContent(code, context),
+                        );
+                      }).toList(),
+                    ),
+              const SizedBox(height: 20.0), // 하단 여백 추가
+            ],
+          ),
         ),
       ),
     );
   }
+
 
 
   /// 고장 코드가 없을 때 표시되는 카드 위젯

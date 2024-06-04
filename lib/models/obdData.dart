@@ -89,7 +89,7 @@ class ObdData {
 
 }
 
-List<String> dtcArray = ["P0001", "P0200"];
+List<String> dtcArray = [];
 
 class SampleDiagnosticCodeData {
   final String code;
@@ -109,37 +109,30 @@ class SampleDiagnosticCodeData {
 String commandJson = '''[
             {
                 "command": "AT D",
-                "description": "",
                 "status": true
             },
             {
                 "command": "AT Z",
-                "description": "",
                 "status": true
             },
             {
                 "command": "AT E0",
-                "description": "",
                 "status": true
             },
             {
                 "command": "AT L0",
-                "description": "",
                 "status": true
             },
             {
                 "command": "AT S0",
-                "description": "",
                 "status": true
             },
             {
                 "command": "AT H0",
-                "description": "",
                 "status": true
             },
             {
                 "command": "AT SP 0",
-                "description": "",
                 "status": true
             }
         ]''';
@@ -150,32 +143,22 @@ String paramJson = '''
         {
             "PID": "AT RV",
             "length": 4,
-            "title": "Battery Voltage",
-            "unit": "V",
             "description": "<int>",
+            "unit": "V",
             "status": true
         },
         {
             "PID": "01 04",
-            "length": 1,
-            "title": "engine load",
-            "unit": "°C",
             "description": "<int>, 100 / 255 * [0]",
             "status": true
         },
         {
             "PID": "01 05",
-            "length": 1,
-            "title": "Engine coolant Temp",
-            "unit": "°C",
             "description": "<int>, [0] - 40",
             "status": true
         },
         {
             "PID": "01 0B",
-            "length": 1,
-            "title": "Manifold absolute pressure",
-            "unit": "kPa",
             "description": "<int>, [0]",
             "status": true
         }
@@ -186,33 +169,21 @@ String paramJson2 = '''
     [
         {
             "PID": "01 0C",
-            "length": 2,
-            "title": "Engine RPM",
-            "unit": "RPM",
             "description": "<double>, (( [0] * 256) + [1] ) / 4",
             "status": true
         },
         {
             "PID": "01 0D",
-            "length": 1,
-            "title": "Speed",
-            "unit": "Kh",
             "description": "<int>, [0]",
             "status": true
         },
         {
             "PID": "01 10",
-            "length": 1,
-            "title": "Mass air flow sensor (MAF) air flow rate",
-            "unit": "g/s",
             "description": "<int>, (256 * [0] + [1]) / 100",
             "status": true
         },
         {
             "PID": "01 3C",
-            "length": 1,
-            "title": "Catalyst Temperature",
-            "unit": "°C",
             "description": "<int>, (256 * [0] + [1]) / 10 - 40",
             "status": true
         }
@@ -221,10 +192,9 @@ String paramJson2 = '''
 // OBD에서 DTC에 대한 JSON 데이터
 String dtcJson = '''
             [
-    {
-                "command": "01 01",
-                "description": "",
+        {
+                "command": "0100",
                 "status": true
-            }
+        }
   ]
           ''';

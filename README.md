@@ -22,7 +22,37 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
 
     - 일단, 스크린샷 화면은 올려놓겠습니다
 
-진행상황 (2024.05.29)
+진행상황 (2024.06.04)
+
+- 중요사항
+
+    - 수요일 미팅때 다시한번 말씀드리겠지만, DTC와 관련해서 수정사항이 있습니다.
+
+    - 먼저 DTC를 구하는 Command는 0100입니다. 에뮬레이터를 통한 정상작동은 확인했습니다.
+
+    - 다만 문제점이 2가지가 있습니다.
+
+        1. DTC전송과 Data전송이 계속 충돌합니다.
+
+            - 단순히 Boolean 타입으로 충돌안되도록 해봤는데도 여전히 충돌이 발생합니다.
+
+            - [ERROR:flutter/runtime/dart_vm_initializer.cc(41)] Unhandled Exception: Exception: onDataReceived is preset and you can not reprogram it
+
+        2. DTC전송이 Data전송 이후에 진행된다면, DTC전송에 문제가 발생하여 DTC를 정상적으로 받아오지 못합니다.
+
+            - 원인을 찾지 못했습니다만, 계속 발생하고있습니다.
+    
+    - 문제점을 해결하지 못하였고 대신 우회하였습니다.
+
+        - 기존 5초마다 데이터를 받는 로직에 DTC도 같이 받도록 하였습니다.
+
+        - 그러면 실행 후 첫 데이터 전송은 충돌이 발생하지만, 두 번째 전송부터 정상적으로 데이터를 받아옵니다.
+
+        - 또한 데이터 전송 시간을 줄이고자 obdData내 JSON데이터를 일부 생략하였습니다.
+
+            - AT RV 와 다른 PID와의 비교를 하시면 이해가 빠를것입니다.
+    
+    - 추가로 모니터링 데이터에 따른 알람내용을 추가하는 코드도 넣어놨습니다.
 
 1. main.dart
 
@@ -64,25 +94,13 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
 
     - 페이지 접속 전 
 
-        - 에러코드를 요청하고
+        - 최신 데이터를 받기 위해 5초간의 대기를 한다.
 
-        - 에러코드를 받아온다
-
-        - 이 과정에서 다이얼로그 화면을 띄운다
+        - 5초 뒤 현재 DTC를 반영한 diagnostisPage를 출력하도록 한다.
 
     - 결과물에는 차량진단과 고장코드 출력
 
-        - 이슈! : 아직까지도 차량 진단 결과물이 어떻게 출력되는지 확인을 못함
-
-            - DTC => []
-
-            - 구글링을 통해 ['P0001','P0002] 형식인건 확인 됨
-
-                - 직접 확인되기전까진 해당 형식을 바탕으로 개발
-
     - 고장 코드가 있을 때 표시되는 내용 위젯
-
-        - 차량진단 버튼을 누르면 에뮬레이터상 개발을 위해 진단 결과 P0001과 P0200이 나오는 것을 가정
 
         - 차량 진단 결과와 고장 코드에 대한 정보를 출력
 
@@ -129,8 +147,6 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
         - 현재 알람 기능을 임시로 구현
 
         - 지금은 1분이지만 실제로는 10분으로 설정 예정
-    
-    - 이슈!(해결 완료) : DTC를 받는거랑 MonitoringData를 받는게 겹치면 충돌 발생
 
     - 진단 알림 받기
         
@@ -172,10 +188,6 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
 
     - 필요한 변수나 데이터들을 저장
 
-    - obdData_graphic.dart는 mainNoBluetooth 버전 한정 사용
-
-    - 라이브러리 선택 완료 후 삭제 예정
-
 - 참고
     - Command 목록
         - https://www.sparkfun.com/datasheets/Widgets/ELM327_AT_Commands.pdf
@@ -187,11 +199,10 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
         - https://en.wikipedia.org/wiki/OBD-II_PIDs
     - bluetooth-serial 라이브러리 문제 해결 방법
         - https://stackoverflow.com/questions/75906535/flutter-bluetooth-permission-missing-in-manifest
-    - 앱 이미지 : <a href="https://www.flaticon.com/kr/free-icons/" title="자발적인 아이콘">자발적인 아이콘 제작자: rukanicon - Flaticon</a>
-
-    - 오픈소스 라이선스에 넣을 것
 
 - 아이콘 이미지
+
+    - 앱 이미지 : <a href="https://www.flaticon.com/kr/free-icons/" title="자발적인 아이콘">자발적인 아이콘 제작자: rukanicon - Flaticon</a>
     
     - <a href="https://www.flaticon.com/kr/free-icons/" title="블루투스 아이콘">블루투스 아이콘 제작자: lakonicon - Flaticon</a>
 
@@ -207,4 +218,4 @@ OBD2(ELM327)을 이용한 차량 진단 서비스 어플리케이션
 
     - <a href="https://www.flaticon.com/kr/free-icons/" title="경고 아이콘">경고 아이콘 제작자: Creatype - Flaticon</a>
 
-    <a href="https://www.flaticon.com/kr/free-icons/foursquare-" title="foursquare 체크인 아이콘">Foursquare 체크인 아이콘 제작자: hqrloveq - Flaticon</a>
+    - <a href="https://www.flaticon.com/kr/free-icons/foursquare-" title="foursquare 체크인 아이콘">Foursquare 체크인 아이콘 제작자: hqrloveq - Flaticon</a>

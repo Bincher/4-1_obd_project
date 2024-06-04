@@ -16,8 +16,6 @@ import 'package:flutter_tts/flutter_tts.dart';
 
 bool isConnected = false;
 bool isInited = false;
-bool isRequestingDtc = false;
-bool isRequestingData = false;
 Obd2Plugin obd2 = Obd2Plugin();
 FlutterLocalNotificationsPlugin _local = FlutterLocalNotificationsPlugin();
 FlutterTts tts = FlutterTts();
@@ -30,8 +28,7 @@ void main() {
   
   // 5초마다 get Monitoring Data 
   Timer.periodic(const Duration(seconds: 5), (timer) async {
-    // DTC와 data 충돌 방지
-    if (isConnected && !isRequestingDtc) {
+    if (isConnected) {
       await getDataFromObd(obd2);
     }
   });
@@ -55,7 +52,7 @@ void main() {
       );
       
       String content = await getMessage();
-      if(!quietDiagnosis || content != "현재 발견된 문제가 없습니다."){
+      if(!quietDiagnosis || dtcArray.isNotEmpty){
         await _local.show(
           0,
           "OBD 차량스캐너",
@@ -314,13 +311,13 @@ Future<void> getDataFromObd(Obd2Plugin obd2) async {
   }
   // 연결된 경우 데이터 수신 시작
   if (await obd2.hasConnection) {
-    isRequestingData = true;
+    print("데이터 전송 시작");
     // 데이터 수신이 초기화되지 않은 경우 수신 리스너 설정
     if (!(await obd2.isListenToDataInitialed)) {
       obd2.setOnDataReceived((command, response, requestCode) {
+        print("$command => $response");
         // 응답이 JSON 배열 형태로 시작하는 경우 파싱
         if (response.startsWith('[{')) {
-          print("$command => $response");
           var jsonResponse = jsonDecode(response);
           for (var data in jsonResponse) {
             switch (data['PID']) {
@@ -358,47 +355,49 @@ Future<void> getDataFromObd(Obd2Plugin obd2) async {
                 break;
             }
           }
-        }
+        } else if (command == "DTC" && response.startsWith('[') && response.endsWith(']')) {
+            print("$command => $response");
+            List<dynamic> dtcList = json.decode(response);
+            dtcArray = List<String>.from(dtcList);
+            print("DTC Array: $dtcArray");
+          }
       });
     }
 
     // OBD 설정을 위한 JSON 데이터 전송
-    if(!isInited) await Future.delayed(Duration(milliseconds: await obd2.configObdWithJSON(commandJson)), (){print("initSuccess");isInited = true;});
+    if(!isInited) await Future.delayed(Duration(milliseconds: await obd2.configObdWithJSON(commandJson)), (){isInited = true;});
     // 파라미터 데이터 요청
     await Future.delayed(Duration(milliseconds: await obd2.getParamsFromJSON(paramJson)), (){});
-    await Future.delayed(Duration(milliseconds: await obd2.getParamsFromJSON(paramJson2)), (){print("getDataSuccess"); isRequestingData = false;});
+    await Future.delayed(Duration(milliseconds: await obd2.getParamsFromJSON(paramJson2)), (){});
+    await Future.delayed(Duration(milliseconds: await obd2.getDTCFromJSON(dtcJson)), (){print("데이터 전송 종료");});
   }
 }
 
 /// OBD2 장치로부터 DTC를 가져오는 함수
-Future<void> getDtcFromObd(Obd2Plugin obd2) async {
+// Future<void> getDtcFromObd(Obd2Plugin obd2) async {
   
-  if (!(await obd2.isBluetoothEnable)) {
-    await obd2.enableBluetooth;
-  }
-  if (await obd2.hasConnection) {
-    isRequestingDtc = true;
-    if (isRequestingData){
-      await Future.delayed(Duration(seconds: 5));
-    } 
-    if (!(await obd2.isListenToDataInitialed)) {
-      obd2.setOnDataReceived((command, response, requestCode) {
-        print("$command => $response");
-        // DTC 형식에 대한 정보가 없으므로 처리하지 않음
-        //dtcArray = [];
-        if (command == "DTC" && response.startsWith('[') && response.endsWith(']')) {
-          // 주석 제거할 것
-          // List<dynamic> dtcList = json.decode(response);
-          // dtcArray = List<String>.from(dtcList);
-          dtcArray = ["P0001", "P0200"];
-          print("DTC Array: $dtcArray");
-        }
-      });
-    }
-    if(!isInited) await Future.delayed(Duration(milliseconds: await obd2.configObdWithJSON(commandJson)), (){print("initSuccess");isInited = true;});
-    await Future.delayed(Duration(milliseconds: await obd2.getDTCFromJSON(dtcJson)), (){print("getDtcSuccess");isRequestingDtc = false;});
-  }
-}
+//   if (!(await obd2.isBluetoothEnable)) {
+//     await obd2.enableBluetooth;
+//   }
+//   if (await obd2.hasConnection) {
+//     isRequestingDtc = true;
+//     if (isRequestingData){
+//       await Future.delayed(const Duration(seconds: 5));
+//     } 
+//     if (!(await obd2.isListenToDataInitialed)) {
+//       obd2.setOnDataReceived((command, response, requestCode) {
+//         if (command == "DTC" && response.startsWith('[') && response.endsWith(']')) {
+//           print("$command => $response");
+//           List<dynamic> dtcList = json.decode(response);
+//           dtcArray = List<String>.from(dtcList);
+//           print("DTC Array: $dtcArray");
+//         }
+//       });
+//     }
+//     await Future.delayed(Duration(milliseconds: await obd2.configObdWithJSON(commandJson)), (){print("DTC를 위한 초기화");isInited = true;});
+//     await Future.delayed(Duration(milliseconds: await obd2.getDTCFromJSON(dtcJson)), (){print("DTC 받기 성공");isRequestingDtc = false;});
+//   }
+// }
 
 /// 버튼 행 위젯 설정 함수
 Widget setButtonRow(BuildContext context, {required String firstButton, required String secondButton}) {
@@ -433,13 +432,14 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
           return AlertDialog(
             title: const Text("진단 중"),
             content: FutureBuilder(
-              future: getDtcFromObd(obd2),
+              future: Future.delayed(const Duration(seconds: 5)),
               builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const CircularProgressIndicator();
                 } else if (snapshot.hasError) {
                   return Text('Error: ${snapshot.error}');
                 } else {
+                  
                   return const SizedBox.shrink();
                 }
               },
@@ -447,15 +447,15 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
           );
         },
       );
-      await getDtcFromObd(obd2);
-      Navigator.pop(context);
-      Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => DiagnosisPage(
-                        diagnosticCodes: dtcArray.map((code) => SampleDiagnosticCodeData(code: code)).toList(),
-                      )),
-                );
+      Navigator.pop(context); // 진단이 완료되면 다이얼로그를 닫습니다.
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DiagnosisPage(
+              diagnosticCodes: dtcArray.map((code) => SampleDiagnosticCodeData(code: code)).toList(),
+            ),
+        ),
+      );
     } else {
       showDialog(
         context: context,
@@ -583,7 +583,6 @@ Future<void> _initLocalNotification() async {
 
 /// local notification Message 설정
 Future<String> getMessage() async {
-  await getDtcFromObd(obd2);
 
   String msg = "";
   if(dtcArray.isEmpty) {
@@ -591,8 +590,29 @@ Future<String> getMessage() async {
   } else {
     msg += "진단코드 : 있음(진단버튼 클릭 필요)\n";
   }
-  if(ObdData.engineTemp > 95){
-    msg += "엔진온도 : 95도 보다 높음, 확인 필요\n";
+  if(ObdData.engineTemp > 105){
+    msg += "엔진냉각온도 : 정상범위보다 높음, 확인 필요\n";
+  }
+  if(ObdData.batteryVoltage > 14.7){
+    msg += "배터리전압 : 정상범위보다 높음, 확인 필요\n";
+  }
+  if(ObdData.batteryVoltage < 12.6){
+    msg += "배터리전압 : 정상범위보다 낮음, 확인 필요\n";
+  }
+  if(ObdData.engineRpm > 3000){
+    msg += "엔진 RPM : 정상범위보다 높음, 확인 필요\n";
+  }
+  if(ObdData.engineLoad > 75){
+    msg += "엔진 과부화 : 정상범위보다 높음, 확인 필요\n";
+  }
+  if(ObdData.manifoldPressure > 250){
+    msg += "흡입매니폴드 : 정상범위보다 높음, 확인 필요\n";
+  }
+  if(ObdData.maf > 25){
+    msg += "흡입 공기량 : 정상범위보다 높음, 확인 필요\n";
+  }
+  if(ObdData.catalystTemp > 800){
+    msg += "촉매 온도 : 정상범위보다 높음, 확인 필요\n";
   }
   return msg;
 }
