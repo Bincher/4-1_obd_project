@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'home/main.dart';
 
 bool _isLightMode = false;
+
 class SettingPage extends StatefulWidget {
   const SettingPage({Key? key}) : super(key: key);
 

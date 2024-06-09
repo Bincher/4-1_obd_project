@@ -1,14 +1,12 @@
 // allimPage.dart
+
 import 'package:flutter/material.dart';
 import 'package:settings_ui/settings_ui.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
-  runApp(MyApp());
-}
+import '../models/obdData.dart';
 
-bool diagnosisNotification = true;
-bool ttsVoiceEnabled = true;
-bool quietDiagnosis = false;
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -16,7 +14,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Settings Example',
+      title: 'AllimPage',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -27,13 +25,25 @@ class MyApp extends StatelessWidget {
 
 class AllimPage extends StatefulWidget {
   const AllimPage({Key? key}) : super(key: key);
-  
+
   @override
   State<AllimPage> createState() => AllimPageState();
 }
 
 class AllimPageState extends State<AllimPage> {
   
+
+  @override
+  void initState() {
+    super.initState();
+    
+  }
+
+  Future<void> _saveSettings(String key, bool value) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool(key, value);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,9 +53,7 @@ class AllimPageState extends State<AllimPage> {
       body: SettingsList(
         sections: [
           SettingsSection(
-            title: const Text(
-              '공통',
-            ),
+            title: const Text('공통'),
             tiles: <SettingsTile>[
               SettingsTile.switchTile(
                 title: const Text('진단 알림 받기'),
@@ -53,12 +61,11 @@ class AllimPageState extends State<AllimPage> {
                 onToggle: (value) {
                   setState(() {
                     diagnosisNotification = value;
-                    
+                    _saveSettings('diagnosisNotification', value);
                   });
                 },
                 leading: const Icon(Icons.notifications),
               ),
-              
             ],
           ),
           SettingsSection(
@@ -71,10 +78,10 @@ class AllimPageState extends State<AllimPage> {
                   onToggle: (value) {
                     setState(() {
                       ttsVoiceEnabled = value;
+                      _saveSettings('ttsVoiceEnabled', value);
                     });
                   },
                   leading: const Icon(Icons.volume_up),
-
                 ),
               if (diagnosisNotification)
                 SettingsTile.switchTile(
@@ -83,13 +90,13 @@ class AllimPageState extends State<AllimPage> {
                   onToggle: (value) {
                     setState(() {
                       quietDiagnosis = value;
+                      _saveSettings('quietDiagnosis', value);
                     });
                   },
                   leading: const Icon(Icons.volume_off),
                 ),
             ],
           ),
-          
         ],
       ),
     );

@@ -147,7 +147,7 @@ Widget chatGPTOpinionScreen(BuildContext context, SampleDiagnosticCodeData code)
   final String codeAsString = code.toString();
   return Scaffold(
     appBar: AppBar(
-      title: const Text('ChatGPT 의견'),
+      title: const Text('AI 조언'),
       actions: [
         IconButton( //새로고침 버튼 추가
           icon: const Icon(Icons.refresh),

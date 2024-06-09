@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../allimPage.dart';
 import '../diagnosisPage.dart';
@@ -115,10 +116,20 @@ class MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
+    _loadSettings();
     _permissionWithNotification(); // 앱 시작시 권한 설정 -> 안드로이드 12 이상만
     _initLocalNotification();
     tts.setLanguage('kr');
     tts.setSpeechRate(0.8);
+  }
+
+  Future<void> _loadSettings() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      diagnosisNotification = prefs.getBool('diagnosisNotification') ?? true;
+      ttsVoiceEnabled = prefs.getBool('ttsVoiceEnabled') ?? true;
+      quietDiagnosis = prefs.getBool('quietDiagnosis') ?? false;
+    });
   }
 
   Future<void> setBluetoothDevice(Obd2Plugin obd2plugin) async {
@@ -439,7 +450,6 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
                 } else if (snapshot.hasError) {
                   return Text('Error: ${snapshot.error}');
                 } else {
-                  
                   return const SizedBox.shrink();
                 }
               },
@@ -447,6 +457,7 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
           );
         },
       );
+      Future.delayed(const Duration(seconds: 5));
       Navigator.pop(context); // 진단이 완료되면 다이얼로그를 닫습니다.
         Navigator.push(
           context,

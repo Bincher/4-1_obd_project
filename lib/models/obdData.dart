@@ -90,6 +90,9 @@ class ObdData {
 }
 
 List<String> dtcArray = [];
+bool diagnosisNotification = true;
+bool ttsVoiceEnabled = true;
+bool quietDiagnosis = false;
 
 class SampleDiagnosticCodeData {
   final String code;
