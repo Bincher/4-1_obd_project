@@ -384,32 +384,6 @@ Future<void> getDataFromObd(Obd2Plugin obd2) async {
   }
 }
 
-/// OBD2 장치로부터 DTC를 가져오는 함수
-// Future<void> getDtcFromObd(Obd2Plugin obd2) async {
-  
-//   if (!(await obd2.isBluetoothEnable)) {
-//     await obd2.enableBluetooth;
-//   }
-//   if (await obd2.hasConnection) {
-//     isRequestingDtc = true;
-//     if (isRequestingData){
-//       await Future.delayed(const Duration(seconds: 5));
-//     } 
-//     if (!(await obd2.isListenToDataInitialed)) {
-//       obd2.setOnDataReceived((command, response, requestCode) {
-//         if (command == "DTC" && response.startsWith('[') && response.endsWith(']')) {
-//           print("$command => $response");
-//           List<dynamic> dtcList = json.decode(response);
-//           dtcArray = List<String>.from(dtcList);
-//           print("DTC Array: $dtcArray");
-//         }
-//       });
-//     }
-//     await Future.delayed(Duration(milliseconds: await obd2.configObdWithJSON(commandJson)), (){print("DTC를 위한 초기화");isInited = true;});
-//     await Future.delayed(Duration(milliseconds: await obd2.getDTCFromJSON(dtcJson)), (){print("DTC 받기 성공");isRequestingDtc = false;});
-//   }
-// }
-
 /// 버튼 행 위젯 설정 함수
 Widget setButtonRow(BuildContext context, {required String firstButton, required String secondButton}) {
   double buttonSize = MediaQuery.of(context).size.width / 2 - 20;
@@ -440,32 +414,30 @@ Widget setButtonRow(BuildContext context, {required String firstButton, required
         context: context,
         barrierDismissible: false,
         builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text("진단 중"),
-            content: FutureBuilder(
-              future: Future.delayed(const Duration(seconds: 5)),
-              builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator();
-                } else if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
-                } else {
-                  return const SizedBox.shrink();
-                }
-              },
+          Timer(const Duration(seconds: 5), () {
+            Navigator.of(context).pop();
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DiagnosisPage(
+                  diagnosticCodes: dtcArray.map((code) => SampleDiagnosticCodeData(code: code)).toList(),
+                ),
+              ),
+            );
+          });
+
+          return const AlertDialog(
+            title: Text("진단 중"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 20),
+                Text("잠시만 기다려주세요."),
+              ],
             ),
           );
         },
-      );
-      Future.delayed(const Duration(seconds: 5));
-      Navigator.pop(context); // 진단이 완료되면 다이얼로그를 닫습니다.
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => DiagnosisPage(
-              diagnosticCodes: dtcArray.map((code) => SampleDiagnosticCodeData(code: code)).toList(),
-            ),
-        ),
       );
     } else {
       showDialog(
